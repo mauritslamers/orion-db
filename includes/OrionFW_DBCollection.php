@@ -6,7 +6,7 @@ class OrionFW_DBCollection {
 	public $records = array();
 	public $ids = array();
 	
-	function __construct(stdClass $info){
+	function __construct(OrionFW_DBQueryInfo $info){
 	  /// function to construct the collection object
 	  /// \param[in] $info An object containing at least the property tablename
 	  
@@ -38,8 +38,13 @@ class OrionFW_DBCollection {
 		// if the class does not exist, PHP dies here.
 		
 		if(is_object($tmpobject)){
-			// get all ids for this table
-			$query = "select id from " . cleansql($tablename);
+			// even when $info->fieldnamelist is set, override it to only get all ids for this table
+			$info->fieldnamelist = "id";
+			//print_r($info);
+			$tmpQueryObject = new OrionFW_DBQuery;
+			$query = $tmpQueryObject->createQuery($info);
+			//echo $query;
+		/*	$query = "select id from " . cleansql($tablename);
 			
 			
 			
@@ -53,7 +58,7 @@ class OrionFW_DBCollection {
 			}
 			if($orderFieldExists){
 			   $query .= " ORDER BY " . $orderField;
-			}
+			}*/
 			$errormessage = "Error while retrieving a collection from table " . $tablename;
 			$result = mysql_query($query) or fataldberror($query, $errormessage . ": " . mysql_error());
 			$numrows = mysql_num_rows($result);

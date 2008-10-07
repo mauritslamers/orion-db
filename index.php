@@ -7,7 +7,7 @@
  *
  */ 
 
-require_once("includes/dbconnect.php");
+require_once("dbconnect.php");
 require_once("includes/securitylib.php");
 require_once("includes/commonfunctions.php"); // library containing common functions like error logging
 require_once("includes/OrionFW.php"); // load the framework
@@ -62,23 +62,21 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                 case 1:
                     //we have a list or a refresh with a list of id's
                     //let's get the $_GET;
-                    if(array_key_exists('ids',$_GET)){
-                       // we will get an comma separated list and let's keep in that way
-                       // easy to include in queries
-                       $idsList = $_GET['ids'];
-                       
-                       
+                    $tmpInfo = new OrionFW_DBQueryInfo;
+                    // iterate through $_GET
+                    $tmpInfo->tablename = $requestedResource;
+                    foreach($_GET as $key=>$value){
+                       $tmpInfo->conditions[$key] = $value;
                     }
-                    else {
-                      if(array_key_exists('order',$_GET)){
-                        
-                      }
-                    }
-                    
+                    OrionFW_List($tmpInfo);
                     break;
                 case 2:
                     // we have a refresh, get the id
                     // take the id and feed it to the refresh function
+                    $tmpInfo = new OrionFW_DBQueryInfo;
+                    $tmpInfo->tablename = $requestedResource;
+                    $tmpInfo->conditions['id'] = $request[1];
+                    OrionFW_List($tmpInfo);
                 default:
                     // not good, die
                     die();

@@ -2,9 +2,12 @@
 
 class OrionFw_DBObject {
 	
-	private $_fieldnames = array();
-	private $_tablename = "";
-	private $_initialised = false;
+	private $_fieldnames = array(); // needs to be private to prevent exposure to JSON
+	private $_completefieldtypes = array(); // needs to be private
+	private $_fieldtypes = array(); // needs to be private to prevent exposure to JSON
+	private $_fieldlimits = array(); // needs to be private to prevent exposure to JSON
+	private $_tablename = ""; // needs to be private to prevent exposure to JSON
+	private $_initialised = false; // needs to be private to prevent exposure to JSON
 	public $type = "";
 	
 	function __construct($tablename){
@@ -25,20 +28,71 @@ class OrionFw_DBObject {
 			$currentrecord = mysql_fetch_array($result);
 			$fieldname = $currentrecord['Field'];
 			$this->_fieldnames[] = $fieldname;
+			// getting varchar(20) to varchar as fieldtypename and 20 as fieldtypelimit
+			$fieldtypedef = $currentrecord['Type'];
+			$parenthesis_open_pos = strpos($fieldtypedef,'(');
+			$parenthesis_close_pos = strpos($fieldtypedef,')');
+			$fieldtypename = substr($fieldtypedef,0,$parenthesis_open_pos);
+			$fieldtypelimit = substr($fieldtypedef,($parenthesis_open_pos+1),($parenthesis_close_pos - $parenthesis_open_pos - 1));
+			$this->_fieldtypes[$fieldname] = $fieldtypename;
+			$this->_fieldlimits[$fieldname] = $fieldtypelimit;
+			$this->_completefieldtypes[$fieldname] = $fieldtypedef;
+			//echo "fieldtypename: $fieldtypename, fieldtypelimit: $fieldtypelimit <br>";
+			// create the property
 			$codetoeval = "\$this->$fieldname = '';";
 			eval($codetoeval);
-			
-			/*$fieldtype = strtolower($currentrecord['Type']);
-			$varcharcomp = substr($fieldtype,0,8);
-			if($varcharcomp == "varchar("){
-				$propname = $fieldname . "_maxlength";
-				$proplength = substr($fieldtype,8,2); 
-				$codetoeval = "\$this->$propname = $proplength";
-				eval($codetoeval);
-			}*/
 		}
 	}	
 
+      // As the field types and limits are private to prevent exposure to JSON,
+      // we still want to be able to tell what the field types and limits are to other PHP functions.
+      // These functions provide this data.
+
+   function getFieldType($fieldname){
+      /// This function returns the field type of the given fieldname or returns false if the fieldname does not exist
+      /// \param[in] $fieldname The name of the field
+      /// \returns The fieldtype or false if the fieldname does not exist
+      if(array_key_exists($fieldname,$this->_fieldtypes)){
+         return $this->_fieldtypes[$fieldname];
+      }
+      else {
+         return false;
+      }
+   }
+
+   function getFieldLimit($fieldname){
+      /// This function returns the field type of the given fieldname or returns false if the fieldname does not exist
+      /// \param[in] $fieldname The name of the field
+      /// \returns The fieldtype or false if the fieldname does not exist
+      if(array_key_exists($fieldname,$this->_fieldlimits)){
+         return $this->_fieldlimits[$fieldname];
+      }
+      else {
+         return false;
+      }
+   }
+
+   function fieldIsText($fieldname){
+      /// Function to return whether a type of a field is textual in nature (type varchar, char, all types of Text)
+      /// \param[in] $fieldname the name of the field to check
+      /// \return True if the field is a text field, false if the field is numerical, and null if the field does not exist
+      if(array_key_exists($fieldname,$this->_fieldtypes)){
+         $tmpType = $this->_fieldtypes[$fieldname];
+         $charpos = strpos($tmpType,'char');
+         $textpos = strpos($tmpType,'text');
+         if($charpos || $textpos){
+            return true;
+         } 
+         else {
+            return false;
+         }
+      } 
+      else {
+         return null;
+      }
+   }
+
+  
 	function init($id){
 		$tmpid = cleansql($id);
 		$query = "select * from " . $this->_tablename . " where id = " . $tmpid;
