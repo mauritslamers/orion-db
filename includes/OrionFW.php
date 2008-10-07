@@ -51,33 +51,29 @@ function __autoload($classname){
 }
 
 
-       
-
-
-
 
 function OrionFW_List(OrionFW_DBQueryInfo $info){
    /// Function to return a list of a specific type and order
-   /// \param[in] $type The type of data (same a table name)
-   /// \param[in] $order The order in which the data needs to be returned
-   
+   /// \param[in] $info The data of the request
+      
    $list = new OrionFW_DBCollection($info);
    echo json_encode($list);
    
 }
 
-function OrionFW_Update($type,$data){
+function OrionFW_Update(OrionFW_DBQueryInfo $info){
    /// Function to update one record of a specific type in the database
    /// \param[in] $type The type of data (same as table name)
    /// \param[in] $data JSON decoded PHP object containing the data
+   
 }
 
 function OrionFW_Create($type,$data){
    /// Function to create a record of a specific type in the database
    /// it should send back the record containing both the new ID and the old _guid
-   /// \param[in] $type The type of the data (same as table name)
+   /// \param[in] $info The type of the data (same as table name)
    /// \param[in] $data JSON decoded PHP object containing the data
-   
+   /// \return The created object
    
 }
 

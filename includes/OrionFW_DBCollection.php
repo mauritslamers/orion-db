@@ -26,52 +26,51 @@ class OrionFW_DBCollection {
 		$tableNameExists = property_exists($info,'tablename');
 		$conditionsFieldExists = property_exists($info,'conditions');
 		
-		if(!$tableNameExists) {
-		    die(); // if tablename is omitted, it is no use getting anything from the database
+		if($tableNameExists) {
+   		$tablename = cleansql($info->tablename);        
+    		// maybe a check whether $tablename contains php code, which seems unlikely as it would violate the URL
+    		$tmpobject = eval("return new " . $tablename . "_class;");
+    		// if the class does not exist, PHP dies here.
+    		
+    		if(is_object($tmpobject)){
+    			// even when $info->fieldnamelist is set, override it to only get all ids for this table
+    			$info->fieldnamelist = "id";
+    			//print_r($info);
+    			$tmpQueryObject = new OrionFW_DBQuery;
+    			$query = $tmpQueryObject->createSelectQuery($info);
+    			//echo $query;
+    		/*	$query = "select id from " . cleansql($tablename);
+    			
+    			
+    			
+    			//hack
+    			if($tablename == "module"){
+    				$query .= " where collegeyear=2007";	
+    			}
+    			// hack 2
+    			if($tablename == "mod_edu"){
+    				$query .= " where module_id in (select id from module where collegeyear=2007)";	
+    			}
+    			if($orderFieldExists){
+    			   $query .= " ORDER BY " . $orderField;
+    			}*/
+    			$errormessage = "Error while retrieving a collection from table " . $tablename;
+    			$result = mysql_query($query) or fataldberror($query, $errormessage . ": " . mysql_error());
+    			$numrows = mysql_num_rows($result);
+    			if($numrows>0){
+    				for($index=0;$index<$numrows;$index++){
+    					$currentrecord = mysql_fetch_array($result);
+    					$currentid = $currentrecord['id'];
+    					$newobject = eval("return new " . $tablename . "_class;");
+    					$newobject->init($currentid);
+    					$this->records[] = $newobject;
+    					$this->ids[] = $currentid;
+    				}	
+    			}
+    		}
 		}
 		else {
-		  $tablename = cleansql($info->tablename);
-		}
-
-		// maybe a check whether $tablename contains php code, which seems unlikely as it would violate the URL
-		$tmpobject = eval("return new " . $tablename . "_class;");
-		// if the class does not exist, PHP dies here.
-		
-		if(is_object($tmpobject)){
-			// even when $info->fieldnamelist is set, override it to only get all ids for this table
-			$info->fieldnamelist = "id";
-			//print_r($info);
-			$tmpQueryObject = new OrionFW_DBQuery;
-			$query = $tmpQueryObject->createQuery($info);
-			//echo $query;
-		/*	$query = "select id from " . cleansql($tablename);
-			
-			
-			
-			//hack
-			if($tablename == "module"){
-				$query .= " where collegeyear=2007";	
-			}
-			// hack 2
-			if($tablename == "mod_edu"){
-				$query .= " where module_id in (select id from module where collegeyear=2007)";	
-			}
-			if($orderFieldExists){
-			   $query .= " ORDER BY " . $orderField;
-			}*/
-			$errormessage = "Error while retrieving a collection from table " . $tablename;
-			$result = mysql_query($query) or fataldberror($query, $errormessage . ": " . mysql_error());
-			$numrows = mysql_num_rows($result);
-			if($numrows>0){
-				for($index=0;$index<$numrows;$index++){
-					$currentrecord = mysql_fetch_array($result);
-					$currentid = $currentrecord['id'];
-					$newobject = eval("return new " . $tablename . "_class;");
-					$newobject->init($currentid);
-					$this->records[] = $newobject;
-					$this->ids[] = $currentid;
-				}	
-			}
+         // create an empty collection object, so do nothing
 		}
 	}
 	

@@ -151,9 +151,9 @@ class OrionFw_DBObject {
 			$currentid = $data->id;
 			for($index=0;$index<count($this->_fieldnames);$index++){
 				$currentfieldname = $this->_fieldnames[$index];
-				if(property_exists($data,$currentfieldname)){
-					$currentvalue = eval("return \$data->$currenfieldname");
-					$tmpkeyvalueset = $currentfieldname . "=" . mysql_real_escape_string($currentvalue);
+				if(property_exists($data,$currentfieldname) && ($currentfieldname != 'id')){ // prevent overwriting of id
+					$currentvalue = eval("return \$data->$currentfieldname");
+					$keyvalueset[] = $currentfieldname . "=" . mysql_real_escape_string($currentvalue);
 				}	
 			}	
 			if(count($key_value_sets)>0){

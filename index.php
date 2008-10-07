@@ -61,10 +61,13 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
             switch($numberOfRequestItems){
                 case 1:
                     //we have a list or a refresh with a list of id's
+                    // it means that we need to separate the table name from the $GET
+                    $tmpExplodedResource = explode('?',$requestedResource);
+                    $tablename = $tmpExplodedResource[0];
                     //let's get the $_GET;
                     $tmpInfo = new OrionFW_DBQueryInfo;
                     // iterate through $_GET
-                    $tmpInfo->tablename = $requestedResource;
+                    $tmpInfo->tablename = $tablename;
                     foreach($_GET as $key=>$value){
                        $tmpInfo->conditions[$key] = $value;
                     }
@@ -75,7 +78,9 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     // take the id and feed it to the refresh function
                     $tmpInfo = new OrionFW_DBQueryInfo;
                     $tmpInfo->tablename = $requestedResource;
-                    $tmpInfo->conditions['id'] = $request[1];
+                    // force it to be a number
+                    $tmpId=intval($request[1]);
+                    $tmpInfo->conditions['id'] = $tmpId;
                     OrionFW_List($tmpInfo);
                 default:
                     // not good, die
@@ -85,18 +90,47 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
     		   break;
     	   case 'POST':
             //create
-    	      
+    	      // all records to create are in the $_POST
+    	      $incomingRecordsToCreate = json_decode($_POST['records']);
+    	      // if malformed JSON, it'd better die here :)
+    	      if($incomingRecordsToCreate){
+        	      // $incomingRecordsToCreate is an array so iterate
+        	      // but first get ourselves an empty OrionFW_DBCollection object to send data back
+        	      $outgoingRecords = new OrionFW_DBCollection;
+        	      // remove the ids part of OrionFW_DBCollection;
+        	      unset($outgoingRecords->ids);
+        	      // create working object
+        	      $workingObject = eval("return new " . $requestedResource . "_class;");
+        	      foreach($incomingRecordsToCreate as $key=>$value){
+        	         // we need to save the id so SC will know what record to update
+        	         // it is sent along in both the id property as the _guid property
+        	         // so remove both from the object we pass along, but keep 'em here  
+        	         $SC_guid = $value->_guid;
+        	         unset($value->_guid);
+        	         unset($value->id);
+        	         // next create a new record
+        	         $workingObject->create($value);
+        	         // now put back the SC temp guid
+        	         $workingObject->_guid = $SC_guid;
+        	         // put the record in the collection
+        	         $outgoingRecords->records[] = clone $workingObject;
+        	      }
+        	      // ready? send back the new record(s)
+        	      echo json_encode($outgoingRecords);
+    	      }
     		   break;
     	   case 'PUT':
-    	      //update existing record, so having /id
+    	      //update existing record, so having either /id or a set of records
+    	      // even if id is given, ignore, as it is in the JSON too
+    	      // todo check for consistency?
     	       //first get the post data
             $putstream = fopen("php://input", "r");
             $putdata = fread($putstream,16384);
             fclose($putstream);
             
             // check whether we have proper JSON data
-            $testJSONObject = json_decode($putdata);
-            if($testJSONObject == null){
+            $JSONObject = json_decode($putdata);
+            if($JSONObject == null){
                 //now create proper JSON data
                 $putdata = urldecode($putdata);
                 $recordsText = substr($putdata,0,strlen('records='));
@@ -107,9 +141,15 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                 $recordJSON = substr($putdata,strlen('records='));
                 //echo $recordJSON;
                 print_r(json_decode($recordJSON));
+                $JSONObject = json_decode($recordJSON);
             }
-            
-            
+            // a valid JSON object
+            // The object is an array so iterate through it
+            // create a working object of the correct type
+            $workingObject = eval("return new ". $requestedResource ."_class;");
+            foreach($JSONObject as $key=>$value){
+               $workingObject->update($value);
+            }
     	    break;
     	 case 'DELETE':
     	   //delete so no post body, only an id

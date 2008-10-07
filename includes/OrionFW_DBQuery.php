@@ -79,7 +79,7 @@ private function addSingleKeyValueQuery($key,$value,$valueIsText = false){
 }
 
 
-function createQuery(OrionFW_DBQueryInfo $info){
+function createSelectQuery(OrionFW_DBQueryInfo $info){
    $this->_numberOfRecursions++;
    //print_r($info);
    if(($info->tablename) && ($info->fieldnamelist)){
@@ -141,7 +141,7 @@ function createQuery(OrionFW_DBQueryInfo $info){
                   break;              
             } 
           }
-          if(property_exists($conditions,'order')){
+          if(property_exists($info->conditions,'order')){
             // add the order to the end of the query
             // check for field names?
             $query .= " ORDER BY " . cleansql($conditions->order);
