@@ -10,6 +10,14 @@ class OrionFw_DBObject {
 	private $_initialised = false; // needs to be private to prevent exposure to JSON
 	public $type = "";
 	
+	// a few SC specific changes
+	//        refreshURL: "/contacts?refresh=123",
+   //     updateURL: "/contacts/123?update=Y",
+   //     destroyURL: "/contacts/123",
+	public $refreshURL = "";
+	public $updateURL = "";
+	public $destroyURL = "";
+	
 	function __construct($tablename){
 		/** 
 			Function to set up the class itself
@@ -20,9 +28,10 @@ class OrionFw_DBObject {
 		$tablename = cleansql($tablename);
 		
 		$query = "SHOW COLUMNS from " . $tablename;
-		$result = mysql_query($query) or fataldberror("Error setting up the class of table " . $tablename . ": " . mysql_error());
+		$result = mysql_query($query) or fataldberror("Error setting up the class of table " . $tablename . ": " . mysql_error(), $query);
 		$this->_tablename = $tablename;
-		$this->type = ucfirst($tablename);
+		//$this->type = ucfirst($tablename);
+
 		$numberofrecords = mysql_num_rows($result);
 		for($index=0;$index<$numberofrecords;$index++){
 			$currentrecord = mysql_fetch_array($result);
@@ -96,6 +105,7 @@ class OrionFw_DBObject {
 	function init($id){
 		$tmpid = cleansql($id);
 		$query = "select * from " . $this->_tablename . " where id = " . $tmpid;
+		logmessage("INIT of object $this->_tablename with query: " . $query);
 
 		$errormessage = "Error when retrieving a record from table " . $this->_tablename . " with id " . $tmpid;
 		$result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
@@ -110,6 +120,10 @@ class OrionFw_DBObject {
 				eval($codetoeval);
 			}
 			$this->_initialised = true;
+			// setup the refresh, update and destroy URL's for this record
+	      $this->refreshURL = "/" . $this->_tablename . "/" . $id;
+	      $this->updateURL = "/" . $this->_tablename . "/" . $id;
+	      $this->destroyURL = "/" . $this->_tablename . "/" . $id;	      
 			return true;
 		} else {
 			return false;
@@ -126,7 +140,8 @@ class OrionFw_DBObject {
 			$currentfieldname = $this->_fieldnames[$index];
 			if(property_exists($data,$currentfieldname)){
 				$properties[] = $currentfieldname;
-				$currentvalue = eval("return \$data->$currentfieldname");
+				$currentvalue = eval("return \$data->$currentfieldname;");
+				if(!$currentvalue) $currentvalue = 'NULL'; // if nothing is in the $currentvalue, put in NULL
 				$values[] = mysql_real_escape_string($currentvalue);
 			}	
 		}
@@ -134,8 +149,9 @@ class OrionFw_DBObject {
 			$propertiesquery = join(",",$properties);
 			$valuesquery = join(",",$values);
 			$query = $querystart . " (" . $propertiesquery . ") VALUES (" . $valuesquery . ")";
+			logmessage("CREATE action in object $_tablename with query: " . $query);
 			$errormessage = "Error creating a new record in the table " . $this->_tablename;
-			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error());
+			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
 			$lastid = mysql_insert_id();
 			$this->init($lastid);
 		}
@@ -144,6 +160,8 @@ class OrionFw_DBObject {
 	function update(stdClass $data){
 		// function to update an existing record in the database
 		// the id property needs to be present in the $data object
+		//print_r($data);
+		//die();
 		$querystart = "UPDATE " . $this->_tablename . " set ";
 		$key_value_sets = array();
 		if(isset($data->id)){
@@ -152,15 +170,17 @@ class OrionFw_DBObject {
 			for($index=0;$index<count($this->_fieldnames);$index++){
 				$currentfieldname = $this->_fieldnames[$index];
 				if(property_exists($data,$currentfieldname) && ($currentfieldname != 'id')){ // prevent overwriting of id
-					$currentvalue = eval("return \$data->$currentfieldname");
+					$currentvalue = eval("return \$data->$currentfieldname;");
+					//$currentvalue = $data[$currentfieldname];
 					$keyvalueset[] = $currentfieldname . "=" . mysql_real_escape_string($currentvalue);
 				}	
 			}	
 			if(count($key_value_sets)>0){
 				$keyvaluequery = join(",", $keyvaluesets);
 				$query = $querystart . $keyvaluequery . " where id=" . $currentid;
+            logmessage("UPDATE action in object $_tablename with query: " . $query);
 				$errormessage = "Error updating the existing record with id " . $currentid . " in the table " . $this->_tablename;
-				mysql_query($query) or fataldberror($errormessage . ": " . mysql_error());
+				mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
 				// re-init object
 				$this->init($currentid); 
 			}
@@ -187,7 +207,8 @@ class OrionFw_DBObject {
 		}
 		if($query != ""){
 			$errormessage = "Error deleting the record with id " . $currentid . " in the table " . $this->_tablename;
-			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error());
+			logmessage("DELETE action in object $_tablename with query: " . $query);
+			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
 		}
 	}	
 }

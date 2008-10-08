@@ -32,6 +32,20 @@ If he is not, no access can be given to any useful data, except for three resour
  * MAIN PROCESS 
  */
 
+// first check whether SC is talking to us:
+// $_SERVER must have both these parameters
+//     [HTTP_X_REQUESTED_WITH] => XMLHttpRequest
+//     [HTTP_X_SPROUTCORE_VERSION] => 1.0
+//print_r($_SERVER);
+
+$xmlHttpRequestPresent = array_key_exists('HTTP_X_REQUESTED_WITH',$_SERVER);
+$SCPresent = array_key_exists('HTTP_X_SPROUTCORE_VERSION',$_SERVER);
+if(!($xmlHttpRequestPresent) && !($SCPresent)){
+   echo "You do not have permission to access this resource!";
+   die();
+}
+
+
 // process the call 
 if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
 	
@@ -90,34 +104,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
     		   break;
     	   case 'POST':
             //create
-    	      // all records to create are in the $_POST
-    	      $incomingRecordsToCreate = json_decode($_POST['records']);
-    	      // if malformed JSON, it'd better die here :)
-    	      if($incomingRecordsToCreate){
-        	      // $incomingRecordsToCreate is an array so iterate
-        	      // but first get ourselves an empty OrionFW_DBCollection object to send data back
-        	      $outgoingRecords = new OrionFW_DBCollection;
-        	      // remove the ids part of OrionFW_DBCollection;
-        	      unset($outgoingRecords->ids);
-        	      // create working object
-        	      $workingObject = eval("return new " . $requestedResource . "_class;");
-        	      foreach($incomingRecordsToCreate as $key=>$value){
-        	         // we need to save the id so SC will know what record to update
-        	         // it is sent along in both the id property as the _guid property
-        	         // so remove both from the object we pass along, but keep 'em here  
-        	         $SC_guid = $value->_guid;
-        	         unset($value->_guid);
-        	         unset($value->id);
-        	         // next create a new record
-        	         $workingObject->create($value);
-        	         // now put back the SC temp guid
-        	         $workingObject->_guid = $SC_guid;
-        	         // put the record in the collection
-        	         $outgoingRecords->records[] = clone $workingObject;
-        	      }
-        	      // ready? send back the new record(s)
-        	      echo json_encode($outgoingRecords);
-    	      }
+            OrionFW_Create($requestedResource); // function will get the post data itself
     		   break;
     	   case 'PUT':
     	      //update existing record, so having either /id or a set of records
@@ -140,7 +127,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                 }
                 $recordJSON = substr($putdata,strlen('records='));
                 //echo $recordJSON;
-                print_r(json_decode($recordJSON));
+                //print_r(json_decode($recordJSON));
                 $JSONObject = json_decode($recordJSON);
             }
             // a valid JSON object

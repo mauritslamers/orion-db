@@ -93,7 +93,7 @@ function createSelectQuery(OrionFW_DBQueryInfo $info){
                // the table we are creating the query for, and processing the specials order and ids if
                // they are not empty
             switch($key){
-               case 'order': // do nothing
+               case 'order': // do nothing (yet)
                   break; 
                case 'ids': // string with comma separated ids
                      // no check necessary as SC will give proper data
@@ -106,7 +106,7 @@ function createSelectQuery(OrionFW_DBQueryInfo $info){
                       // make up the field name and make a recursive call to create the subquery
                       if($value instanceof OrionFW_DBQueryInfo){
                         // make recursive call
-                        $tmpQuery = createQuery($value);
+                        $tmpQuery = createSelectQuery($value);
                         if($tmpQuery != false){
                            $query .= $this->addValueInListQuery($key,$tmpQuery);
                          } 
@@ -141,10 +141,10 @@ function createSelectQuery(OrionFW_DBQueryInfo $info){
                   break;              
             } 
           }
-          if(property_exists($info->conditions,'order')){
+          if(array_key_exists('order',$info->conditions)){
             // add the order to the end of the query
             // check for field names?
-            $query .= " ORDER BY " . cleansql($conditions->order);
+            $query .= " ORDER BY " . cleansql($info->conditions['order']);
           }
       }
       // if ready, return the query

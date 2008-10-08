@@ -7,7 +7,7 @@
  * 
  */
  
-    $ORIONCFG_MySQLDBname = "conservatorium";
+   $ORIONCFG_MySQLDBname = "toelatingsexamen";
 	$ORIONCFG_baseURI = "/~maurits/sproutcore_orion"; // no trailing slash please :)
 
 	$ORIONCFG_locale = "nl_NL";
