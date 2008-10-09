@@ -80,8 +80,6 @@ function OrionFW_Create($requestedResource){
 	      // $incomingRecordsToCreate is an array so iterate
 	      // but first get ourselves an empty OrionFW_DBCollection object to send data back
 	      $outgoingRecords = array();
-	      // remove the ids part of OrionFW_DBCollection;
-	      unset($outgoingRecords->ids);
 	      // create working object
 	      $workingObject = eval("return new " . $requestedResource . "_class;");
 	      foreach($incomingRecordsToCreate as $key=>$value){
@@ -97,7 +95,7 @@ function OrionFW_Create($requestedResource){
 	         $workingObject->_guid = $SC_guid;
 	         
 	         // put the record in the collection
-	         $outgoingRecords->records[] = clone $workingObject;
+	         $outgoingRecords[] = clone $workingObject;
 	      }
 	      // ready? send back the new record(s)
 	      echo json_encode($outgoingRecords);

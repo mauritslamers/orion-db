@@ -96,6 +96,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     $tmpId=intval($request[1]);
                     $tmpInfo->conditions['id'] = $tmpId;
                     OrionFW_List($tmpInfo);
+                    break;
                 default:
                     // not good, die
                     die();
@@ -114,10 +115,11 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
             $putstream = fopen("php://input", "r");
             $putdata = fread($putstream,16384);
             fclose($putstream);
-            
+            //logmessage("read input stream: $putdata");
             // check whether we have proper JSON data
             $JSONObject = json_decode($putdata);
             if($JSONObject == null){
+                logmessage("Now creating proper JSONData");
                 //now create proper JSON data
                 $putdata = urldecode($putdata);
                 $recordsText = substr($putdata,0,strlen('records='));
@@ -126,17 +128,31 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     die();  
                 }
                 $recordJSON = substr($putdata,strlen('records='));
-                //echo $recordJSON;
+                logmessage($recordJSON);
                 //print_r(json_decode($recordJSON));
                 $JSONObject = json_decode($recordJSON);
             }
             // a valid JSON object
             // The object is an array so iterate through it
             // create a working object of the correct type
-            $workingObject = eval("return new ". $requestedResource ."_class;");
-            foreach($JSONObject as $key=>$value){
-               $workingObject->update($value);
+            if($JSONObject){
+               $output = array();
+                $workingObject = eval("return new ". $requestedResource ."_class;");
+                if($workingObject){
+                   foreach($JSONObject as $key=>$value){
+                     logmessage("Processing PUT object array item $key");
+                     $workingObject->update($value);
+                     $output[] = clone $workingObject;
+                   }
+                   echo json_encode($output);
+               }
+               else {
+                 logmessage('No proper working model for update');  
+               }
             }
+            else {
+              logmessage('No proper JSON data!');
+            }   
     	    break;
     	 case 'DELETE':
     	   //delete so no post body, only an id

@@ -30,7 +30,7 @@ class OrionFw_DBObject {
 		$query = "SHOW COLUMNS from " . $tablename;
 		$result = mysql_query($query) or fataldberror("Error setting up the class of table " . $tablename . ": " . mysql_error(), $query);
 		$this->_tablename = $tablename;
-		//$this->type = ucfirst($tablename);
+		$this->type = $tablename;
 
 		$numberofrecords = mysql_num_rows($result);
 		for($index=0;$index<$numberofrecords;$index++){
@@ -40,9 +40,15 @@ class OrionFw_DBObject {
 			// getting varchar(20) to varchar as fieldtypename and 20 as fieldtypelimit
 			$fieldtypedef = $currentrecord['Type'];
 			$parenthesis_open_pos = strpos($fieldtypedef,'(');
-			$parenthesis_close_pos = strpos($fieldtypedef,')');
-			$fieldtypename = substr($fieldtypedef,0,$parenthesis_open_pos);
-			$fieldtypelimit = substr($fieldtypedef,($parenthesis_open_pos+1),($parenthesis_close_pos - $parenthesis_open_pos - 1));
+			if($parenthesis_open_pos){ // ( found, find ) and take name and length
+   			$parenthesis_close_pos = strpos($fieldtypedef,')');
+   			$fieldtypename = substr($fieldtypedef,0,$parenthesis_open_pos);
+   			$fieldtypelimit = substr($fieldtypedef,($parenthesis_open_pos+1),($parenthesis_close_pos - $parenthesis_open_pos - 1));
+			} 
+			else { // no ( found, so just take the entire name
+			   $fieldtypename = $fieldtypedef;
+			   $fieldtypelimit = 0;
+			}
 			$this->_fieldtypes[$fieldname] = $fieldtypename;
 			$this->_fieldlimits[$fieldname] = $fieldtypelimit;
 			$this->_completefieldtypes[$fieldname] = $fieldtypedef;
@@ -82,14 +88,16 @@ class OrionFw_DBObject {
    }
 
    function fieldIsText($fieldname){
-      /// Function to return whether a type of a field is textual in nature (type varchar, char, all types of Text)
+      /// Function to return whether a type of a field is textual in nature (type varchar, char, all types of Text, date and timestamp)
       /// \param[in] $fieldname the name of the field to check
       /// \return True if the field is a text field, false if the field is numerical, and null if the field does not exist
       if(array_key_exists($fieldname,$this->_fieldtypes)){
          $tmpType = $this->_fieldtypes[$fieldname];
          $charpos = strpos($tmpType,'char');
          $textpos = strpos($tmpType,'text');
-         if($charpos || $textpos){
+         $datepos = strpos($tmpType,'date');
+         logmessage("Typename of " . $fieldname . " = " . $tmpType);
+         if($charpos || $textpos || ($tmpType == 'date') || ($tmpType == 'timestamp')){
             return true;
          } 
          else {
@@ -105,7 +113,7 @@ class OrionFw_DBObject {
 	function init($id){
 		$tmpid = cleansql($id);
 		$query = "select * from " . $this->_tablename . " where id = " . $tmpid;
-		logmessage("INIT of object $this->_tablename with query: " . $query);
+		logmessage("INIT of object " . $this->_tablename . " with query: " . $query);
 
 		$errormessage = "Error when retrieving a record from table " . $this->_tablename . " with id " . $tmpid;
 		$result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
@@ -121,9 +129,10 @@ class OrionFw_DBObject {
 			}
 			$this->_initialised = true;
 			// setup the refresh, update and destroy URL's for this record
-	      $this->refreshURL = "/" . $this->_tablename . "/" . $id;
-	      $this->updateURL = "/" . $this->_tablename . "/" . $id;
-	      $this->destroyURL = "/" . $this->_tablename . "/" . $id;	      
+			global $ORIONCFG_baseURI;
+	      $this->refreshURL = $ORIONCFG_baseURI . "/" . $this->_tablename . "/" . $id;
+	      $this->updateURL = $ORIONCFG_baseURI. "/" . $this->_tablename . "/" . $id;
+	      $this->destroyURL = $ORIONCFG_baseURI . "/" . $this->_tablename . "/" . $id;	      
 			return true;
 		} else {
 			return false;
@@ -149,7 +158,7 @@ class OrionFw_DBObject {
 			$propertiesquery = join(",",$properties);
 			$valuesquery = join(",",$values);
 			$query = $querystart . " (" . $propertiesquery . ") VALUES (" . $valuesquery . ")";
-			logmessage("CREATE action in object $_tablename with query: " . $query);
+			logmessage("CREATE action in object " . $this->_tablename . " with query: " . $query);
 			$errormessage = "Error creating a new record in the table " . $this->_tablename;
 			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
 			$lastid = mysql_insert_id();
@@ -164,26 +173,44 @@ class OrionFw_DBObject {
 		//die();
 		$querystart = "UPDATE " . $this->_tablename . " set ";
 		$key_value_sets = array();
-		if(isset($data->id)){
+		if(property_exists($data, 'id')){
 			//$data->id MUST have value
 			$currentid = $data->id;
+			logmessage("Updating " . $this->_tablename . " id " . $currentid . " with " . count($this->_fieldnames) . " fields");
 			for($index=0;$index<count($this->_fieldnames);$index++){
 				$currentfieldname = $this->_fieldnames[$index];
 				if(property_exists($data,$currentfieldname) && ($currentfieldname != 'id')){ // prevent overwriting of id
 					$currentvalue = eval("return \$data->$currentfieldname;");
 					//$currentvalue = $data[$currentfieldname];
-					$keyvalueset[] = $currentfieldname . "=" . mysql_real_escape_string($currentvalue);
+					//logmessage("Fieldname: " . $currentfieldname . ": " . $currentvalue);
+					if(!$currentvalue){
+   					$currentvalue = 'NULL';
+					}
+					else {
+					  if($this->fieldIsText($currentfieldname)){ 
+					     $currentvalue = "'" . mysql_real_escape_string($currentvalue) . "'";
+					  } 
+					  else {
+					     $currentvalue = mysql_real_escape_string($currentvalue);
+					  }  
+					}
+					// no mysql protection because that has already been care of
+					$key_value_sets[] = $currentfieldname . "=" . $currentvalue; 
 				}	
 			}	
 			if(count($key_value_sets)>0){
-				$keyvaluequery = join(",", $keyvaluesets);
+			   logmessage("Assembling query for id" . $currentid);
+				$keyvaluequery = join(",", $key_value_sets);
 				$query = $querystart . $keyvaluequery . " where id=" . $currentid;
-            logmessage("UPDATE action in object $_tablename with query: " . $query);
+            logmessage("UPDATE action in object " . $this->_tablename . " with query: " . $query);
 				$errormessage = "Error updating the existing record with id " . $currentid . " in the table " . $this->_tablename;
 				mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
 				// re-init object
 				$this->init($currentid); 
 			}
+		}
+		else {
+		  logmessage("No id given for update!");
 		}
 	}
 	
