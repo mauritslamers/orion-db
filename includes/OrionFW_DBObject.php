@@ -214,11 +214,11 @@ class OrionFw_DBObject {
 		}
 	}
 	
-	function delete($data){
+	function delete($data = NULL){
 		// function to delete the record indicated by $data or the current record if data happens to be null.
 		// If the object is not initialised, do nothing
 		$query = "";
-		if($data == NULL){
+		if(is_null($data)){
 			if($this->_initialised){
 				// get id
 				$currentid = $this->id;
@@ -232,9 +232,9 @@ class OrionFw_DBObject {
 				$query = "DELETE FROM " . $this->_tablename . " WHERE id = " . $currentid;	
 			}
 		}
-		if($query != ""){
+		if($query){
 			$errormessage = "Error deleting the record with id " . $currentid . " in the table " . $this->_tablename;
-			logmessage("DELETE action in object $_tablename with query: " . $query);
+			logmessage("DELETE action in object " . $this->_tablename . " with query: " . $query);
 			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
 		}
 	}	
