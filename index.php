@@ -90,12 +90,20 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                 case 2:
                     // we have a refresh, get the id
                     // take the id and feed it to the refresh function
+                     /*
                     $tmpInfo = new OrionFW_DBQueryInfo;
                     $tmpInfo->tablename = $requestedResource;
                     // force it to be a number
                     $tmpId=intval($request[1]);
                     $tmpInfo->conditions['id'] = $tmpId;
                     OrionFW_List($tmpInfo);
+                    */
+                    // when we have a refresh or get request for only one record, don't return
+                    // a collection object, but only the record requested.
+                    $workingObject = eval("return new " . $requestedResource . "_class;");
+                    $tmpId=intval($request[1]);
+                    $workingObject->init($tmpId);
+                    echo json_encode($workingObject);
                     break;
                 default:
                     // not good, die
@@ -119,7 +127,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
             // check whether we have proper JSON data
             $JSONObject = json_decode($putdata);
             if($JSONObject == null){
-                logmessage("Now creating proper JSONData");
+                //logmessage("Now creating proper JSONData");
                 //now create proper JSON data
                 $putdata = urldecode($putdata);
                 $recordsText = substr($putdata,0,strlen('records='));
@@ -140,7 +148,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                 $workingObject = eval("return new ". $requestedResource ."_class;");
                 if($workingObject){
                    foreach($JSONObject as $key=>$value){
-                     logmessage("Processing PUT object array item $key");
+                     //logmessage("Processing PUT object array item $key");
                      $workingObject->update($value);
                      $output[] = clone $workingObject;
                    }

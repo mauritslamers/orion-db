@@ -183,7 +183,7 @@ class OrionFw_DBObject {
 					$currentvalue = eval("return \$data->$currentfieldname;");
 					//$currentvalue = $data[$currentfieldname];
 					//logmessage("Fieldname: " . $currentfieldname . ": " . $currentvalue);
-					if(!$currentvalue){
+					if(is_null($currentvalue)){ // checking null
    					$currentvalue = 'NULL';
 					}
 					else {
