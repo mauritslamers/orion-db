@@ -44,6 +44,8 @@ function __autoload($classname){
 			if(file_exists($filename)){
 				require_once "includes/" . $classname . '.php';
 			} else {
+			   // make a log note
+			   logmessage('Autoload did not succeed in finding a decent source to create a class with.');
 				return false;// do nothing for else, unless this breaks things	
 			}
 		}
