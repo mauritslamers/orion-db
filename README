@@ -12,4 +12,9 @@ This results in calls to the server like
 
 http://host/path/to/resource/tablename.
 
-Before you can use it actively, read the INSTALL file on how to configure OrionDB properly
+Before you can use it actively, read the INSTALL file on how to configure OrionDB properly.
+
+NOTE: The current version of OrionDB expects the browser to be able to do GET,POST,PUT and DELETE methods. 
+
+If you find a bug, please file a ticket on http://oriondb.lighthouseapp.com and please include a fix if you are able to write one!
+
