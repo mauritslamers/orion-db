@@ -1,0 +1,10 @@
+
+How to install OrionDB:
+
+
+- copy the config.php.sample file to config.php and set all the values.
+- if you want to use the log file, make sure it exists and allow the apache user to write to it
+- make sure the .htaccess files are working 
+- make sure your model names match the table names in MySQL (case sensitive!)
+
+

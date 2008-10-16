@@ -1,6 +1,6 @@
 <?php
 
-class OrionFw_DBObject {
+class OrionDB_Object {
 	
 	private $_fieldnames = array(); // needs to be private to prevent exposure to JSON
 	private $_completefieldtypes = array(); // needs to be private

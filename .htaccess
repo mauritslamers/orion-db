@@ -1,5 +1,8 @@
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^.*$ /~maurits/sproutcore_orion/index.php
-#RewriteRule ^.*$ /phprestsql/demo/index.php
+#RewriteRule ^.*$ /http/path/to/oriondb
+
+# To prevent caching of the PHP results and 
+# to allow custom headers to reach php (bug in apache??)
+ExpiresActive off

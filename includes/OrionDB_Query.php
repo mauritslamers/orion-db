@@ -1,11 +1,11 @@
 <?php
   
-class OrionFW_DBQueryInfo{
+class OrionDB_QueryInfo{
   
   
          // the conditions array can contain special items like 'ids' and 'order'
          // but also fieldnames as key with a value or
-         // of course a new OrionFW_DBQueryInfo object containing a subquery 
+         // of course a new OrionDB_QueryInfo object containing a subquery 
          // The fieldname can also have a comma separated list 
   public $tablename = "";
   public $fieldnamelist = ""; // comma separated string of values
@@ -13,7 +13,7 @@ class OrionFW_DBQueryInfo{
 }  
   
   
-class OrionFW_DBQuery{
+class OrionDB_Query{
   // a class to create a query based on conditions and table names 
   
    /*
@@ -79,7 +79,7 @@ private function addSingleKeyValueQuery($key,$value,$valueIsText = false){
 }
 
 
-function createSelectQuery(OrionFW_DBQueryInfo $info){
+function createSelectQuery(OrionDB_QueryInfo $info){
    $this->_numberOfRecursions++;
    //print_r($info);
    if(($info->tablename) && ($info->fieldnamelist)){
@@ -102,9 +102,9 @@ function createSelectQuery(OrionFW_DBQueryInfo $info){
                default: // default means we probably have a fieldname, which we can ignore
                         // if the fieldname is not a property of the object
                   if(property_exists($tempTable,$key)){ 
-                      // check for the $value type, if it is a instance of OrionFW_DBQueryInfo, we need to
+                      // check for the $value type, if it is a instance of OrionDB_QueryInfo, we need to
                       // make up the field name and make a recursive call to create the subquery
-                      if($value instanceof OrionFW_DBQueryInfo){
+                      if($value instanceof OrionDB_QueryInfo){
                         // make recursive call
                         $tmpQuery = createSelectQuery($value);
                         if($tmpQuery != false){

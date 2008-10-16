@@ -3,9 +3,9 @@
  	The Orion PHP Framework
  */
 
-require_once("includes/OrionFW_DBObject.php"); // standard database object
-require_once("includes/OrionFW_DBCollection.php"); // standard database collection object
-require_once('includes/OrionFW_DBQuery.php'); // standard query object classes OrionFW_DBQuery and OrionFW_DBQueryInfo
+require_once("includes/OrionDB_Object.php"); // standard database object
+require_once("includes/OrionDB_Collection.php"); // standard database collection object
+require_once('includes/OrionDB_Query.php'); // standard query object classes OrionDB_Query and OrionDB_QueryInfo
 
 function __autoload($classname){
 	// generate classes on the fly using the $classname and tablename
@@ -35,7 +35,7 @@ function __autoload($classname){
 		}	
 		if($tablefound){
 			//match found, create new class
-			$codetoeval = "class $classname extends OrionFW_DBObject { function __construct(){ parent::__construct('$tablename'); } }";
+			$codetoeval = "class $classname extends OrionDB_Object { function __construct(){ parent::__construct('$tablename'); } }";
 			eval($codetoeval);
 		} else {
 			// check for external PHP files to include
@@ -54,23 +54,23 @@ function __autoload($classname){
 
 
 
-function OrionFW_List(OrionFW_DBQueryInfo $info){
+function OrionDB_List(OrionDB_QueryInfo $info){
    /// Function to return a list of a specific type and order
    /// \param[in] $info The data of the request
       
-   $list = new OrionFW_DBCollection($info);
+   $list = new OrionDB_Collection($info);
    echo json_encode($list);
    
 }
 
-function OrionFW_Update(OrionFW_DBQueryInfo $info){
+function OrionDB_Update(OrionDB_QueryInfo $info){
    /// Function to update one record of a specific type in the database
    /// \param[in] $type The type of data (same as table name)
    /// \param[in] $data JSON decoded PHP object containing the data
    
 }
 
-function OrionFW_Create($requestedResource){
+function OrionDB_Create($requestedResource){
    /// Function to create a record of a specific type in the database
    /// it should send back the record containing both the new ID and the old _guid
    /// \return The created object
@@ -80,7 +80,7 @@ function OrionFW_Create($requestedResource){
       // if malformed JSON, it'd better die here :)
       if($incomingRecordsToCreate){
 	      // $incomingRecordsToCreate is an array so iterate
-	      // but first get ourselves an empty OrionFW_DBCollection object to send data back
+	      // but first get ourselves an empty OrionDB_Collection object to send data back
 	      $outgoingRecords = array();
 	      // create working object
 	      $workingObject = eval("return new " . $requestedResource . "_class;");
@@ -105,7 +105,7 @@ function OrionFW_Create($requestedResource){
       }
 }
 
-function OrionFW_Destroy(){
+function OrionDB_Destroy(){
    
 
 }

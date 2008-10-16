@@ -1,6 +1,6 @@
 <?php
 
-class OrionFW_DBCollection {
+class OrionDB_Collection {
 	// collection to hold a set of objects of a specific type
 	
 	public $records = array();
@@ -20,7 +20,7 @@ class OrionFW_DBCollection {
 	  // we want to be able to call this function without parameters, so we cannot 
 	  // check at the entrance. So, let's make a check here: if $info is not of the correct type, 
 	  // make an empty collection object
-	  if($info instanceof OrionFW_DBQueryInfo){
+	  if($info instanceof OrionDB_QueryInfo){
     	  
     		// first find out whether the table name exists.
     		// This can be done by initialising one object as the autoload function creating the intended class 
@@ -40,24 +40,10 @@ class OrionFW_DBCollection {
         			// even when $info->fieldnamelist is set, override it to only get all ids for this table
         			$info->fieldnamelist = "id";
         			//print_r($info);
-        			$tmpQueryObject = new OrionFW_DBQuery;
+        			$tmpQueryObject = new OrionDB_Query;
         			$query = $tmpQueryObject->createSelectQuery($info);
         			//echo $query;
-        		/*	$query = "select id from " . cleansql($tablename);
-        			
-        			
-        			
-        			//hack
-        			if($tablename == "module"){
-        				$query .= " where collegeyear=2007";	
-        			}
-        			// hack 2
-        			if($tablename == "mod_edu"){
-        				$query .= " where module_id in (select id from module where collegeyear=2007)";	
-        			}
-        			if($orderFieldExists){
-        			   $query .= " ORDER BY " . $orderField;
-        			}*/
+ 
         			$errormessage = "Error while retrieving a collection from table " . $tablename;
         			$result = mysql_query($query) or fataldberror($query, $errormessage . ": " . mysql_error());
         			$numrows = mysql_num_rows($result);

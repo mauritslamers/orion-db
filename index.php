@@ -10,7 +10,7 @@
 require_once("dbconnect.php");
 require_once("includes/securitylib.php");
 require_once("includes/commonfunctions.php"); // library containing common functions like error logging
-require_once("includes/OrionFW.php"); // load the framework
+require_once("includes/OrionDB.php"); // load the framework
 
 
 /* 
@@ -79,24 +79,24 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     $tmpExplodedResource = explode('?',$requestedResource);
                     $tablename = $tmpExplodedResource[0];
                     //let's get the $_GET;
-                    $tmpInfo = new OrionFW_DBQueryInfo;
+                    $tmpInfo = new OrionDB_QueryInfo;
                     // iterate through $_GET
                     $tmpInfo->tablename = $tablename;
                     foreach($_GET as $key=>$value){
                        $tmpInfo->conditions[$key] = $value;
                     }
-                    OrionFW_List($tmpInfo);
+                    OrionDB_List($tmpInfo);
                     break;
                 case 2:
                     // we have a refresh, get the id
                     // take the id and feed it to the refresh function
                      /*
-                    $tmpInfo = new OrionFW_DBQueryInfo;
+                    $tmpInfo = new OrionDB_QueryInfo;
                     $tmpInfo->tablename = $requestedResource;
                     // force it to be a number
                     $tmpId=intval($request[1]);
                     $tmpInfo->conditions['id'] = $tmpId;
-                    OrionFW_List($tmpInfo);
+                    OrionDB_List($tmpInfo);
                     */
                     // when we have a refresh or get request for only one record, don't return
                     // a collection object, but only the record requested.
@@ -113,7 +113,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
     		   break;
     	   case 'POST':
             //create
-            OrionFW_Create($requestedResource); // function will get the post data itself
+            OrionDB_Create($requestedResource); // function will get the post data itself
     		   break;
     	   case 'PUT':
     	      //update existing record, so having either /id or a set of records
