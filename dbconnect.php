@@ -9,13 +9,13 @@
 
   */
 
-require_once('includes/config.php');
+require_once('config.php');
 
-  $database = mysql_connect('127.0.0.1','','')
+  $database = mysql_connect('ORIONDBCFG_MySQL_host','ORIONDBCFG_MySQL_user','.ORIONDBCFG_MySQL_password')
     or die("Could not connect");
 
   // select the database to use
-  mysql_select_db("") or die("Could not select database");
+  mysql_select_db($ORIONDBCFG_MySQLDBname) or die("Could not select database");
 
 
 

@@ -22,12 +22,12 @@ function __autoload($classname){
 	$numrows = mysql_num_rows($result);
 	$tablefound = false;
 	// get the db name
-	global $ORIONCFG_MySQLDBname;
+	global $ORIONDBCFG_MySQLDBname;
 	// compare the class name against the table names in the DB and set $tablefound to true if a match is found
 	if($numrows>0){
 		for($index=0;$index<$numrows;$index++){
 			$currentrecord = mysql_fetch_array($result);
-			$fieldname = "Tables_in_" . $ORIONCFG_MySQLDBname;
+			$fieldname = "Tables_in_" . $ORIONDBCFG_MySQLDBname;
 			$currenttablename = $currentrecord[$fieldname];
 			if($currenttablename == $tablename){
 				$tablefound = true;	
@@ -45,7 +45,7 @@ function __autoload($classname){
 				require_once "includes/" . $classname . '.php';
 			} else {
 			   // make a log note
-			   logmessage('Autoload did not succeed in finding a decent source to create a class with.');
+			   logmessage('Autoload did not succeed in finding a decent source to create a class with. Classname:' . $classname);
 				return false;// do nothing for else, unless this breaks things	
 			}
 		}
@@ -75,7 +75,7 @@ function OrionFW_Create($requestedResource){
    /// it should send back the record containing both the new ID and the old _guid
    /// \return The created object
 
-	      // all records to create are in the $_POST
+	   // all records to create are in the $_POST
       $incomingRecordsToCreate = json_decode($_POST['records']);
       // if malformed JSON, it'd better die here :)
       if($incomingRecordsToCreate){

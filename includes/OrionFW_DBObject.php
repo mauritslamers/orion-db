@@ -129,10 +129,10 @@ class OrionFw_DBObject {
 			}
 			$this->_initialised = true;
 			// setup the refresh, update and destroy URL's for this record
-			global $ORIONCFG_baseURI;
-	      $this->refreshURL = $ORIONCFG_baseURI . "/" . $this->_tablename . "/" . $id;
-	      $this->updateURL = $ORIONCFG_baseURI. "/" . $this->_tablename . "/" . $id;
-	      $this->destroyURL = $ORIONCFG_baseURI . "/" . $this->_tablename . "/" . $id;	      
+			global $ORIONDBCFG_baseURI;
+	      $this->refreshURL = $ORIONDBCFG_baseURI . "/" . $this->_tablename . "/" . $id;
+	      $this->updateURL = $ORIONDBCFG_baseURI. "/" . $this->_tablename . "/" . $id;
+	      $this->destroyURL = $ORIONDBCFG_baseURI . "/" . $this->_tablename . "/" . $id;	      
 			return true;
 		} else {
 			return false;

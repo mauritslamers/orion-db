@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * \file config.php
+ * \brief Settings file for (Muz)Orion. Also sets the locale.
+ *
+ * 
+ */
+ 
+   $ORIONDBCFG_MySQL_host = "localhost";
+   $ORIONDBCFG_MySQL_user = "db_user";
+   $ORIONDBCFG_MySQL_password = "db_passwd";
+   
+   $ORIONDBCFG_MySQL_dbname = "dbname";
+	$ORIONDBCFG_baseURI = "/path/to"; // no trailing slash please :)
+
+	$ORIONDBCFG_locale = "en_US";
+	
+	$ORIONDBCFG_logfilename = "oriondb.log";
+	$ORIONDBCFG_logfilepath = "/path/to"; 
+	
+	// functionality that absolutely needs to be executed 
+	// creating a valid log file name with path
+	$lastposofslash = strrchr($ORIONDBCFG_logfilepath,"/");
+	if($lastposofslash != strlen($ORIONDBCFG_logfilepath)){
+		$ORIONDBCFG_logfile = $ORIONDBCFG_logfilepath . "/" . $ORIONDBCFG_logfilename;	
+	} else {
+		$ORIONDBCFG_logfile = $ORIONDBCFG_logfilepath . $ORIONDBCFG_logfilename;	
+	}
+		
+	setlocale (LC_ALL, $ORIONDBCFG_locale);
+?>

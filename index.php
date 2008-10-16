@@ -41,8 +41,8 @@ If he is not, no access can be given to any useful data, except for three resour
 $xmlHttpRequestPresent = array_key_exists('HTTP_X_REQUESTED_WITH',$_SERVER);
 $SCPresent = array_key_exists('HTTP_X_SPROUTCORE_VERSION',$_SERVER);
 if(!($xmlHttpRequestPresent) && !($SCPresent)){
-//   echo "You do not have permission to access this resource!";
-//   die();
+   echo "You do not have permission to access this resource!";
+   die();
 }
 
 
