@@ -7,26 +7,12 @@
  *
  */ 
 
-require_once("dbconnect.php");
+require_once("dbconnect.php"); // dbconnect.php will automatically require_once config.php
 require_once("includes/securitylib.php");
 require_once("includes/commonfunctions.php"); // library containing common functions like error logging
 require_once("includes/OrionDB.php"); // load the framework
 
-
-/* 
-Before anything goes, the session needs to be created
-The sessions work in a different way from what is normal.
-
-The session will be created as soon as the login page is loaded.
-A class member called authenticated will contain whether the user of the current session is actually authenticated.
-If he is not, no access can be given to any useful data, except for three resources:
-- authenticationserver -> the list of servers to authenticate against
-- logindata -> the action of logging in
-- systemstate -> the action of retrieving the current state of the session.
-
-
-*/
-
+// No session support yet
 
 /* 
  * MAIN PROCESS 
@@ -38,13 +24,14 @@ If he is not, no access can be given to any useful data, except for three resour
 //     [HTTP_X_SPROUTCORE_VERSION] => 1.0
 //print_r($_SERVER);
 
-$xmlHttpRequestPresent = array_key_exists('HTTP_X_REQUESTED_WITH',$_SERVER);
-$SCPresent = array_key_exists('HTTP_X_SPROUTCORE_VERSION',$_SERVER);
-if(!($xmlHttpRequestPresent) && !($SCPresent)){
-   echo "You do not have permission to access this resource!";
-   die();
+if(!$ORIONDBCFG_allow_non_sc_clients){  
+   $xmlHttpRequestPresent = array_key_exists('HTTP_X_REQUESTED_WITH',$_SERVER);
+   $SCPresent = array_key_exists('HTTP_X_SPROUTCORE_VERSION',$_SERVER);
+   if(!($xmlHttpRequestPresent) && !($SCPresent)){
+      echo "You do not have permission to access this resource!";
+      die();
+   }
 }
-
 
 // process the call 
 if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
@@ -55,11 +42,10 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
 	//echo $ORION_actualRequest;
 	
 	// now we have our actual request 
-	// Before we look at 
 	// next find out whether a specific item is being called for, say : student/25 which would be student with id 25
-	// it could also be that a different request has been made, for example student/order=id.
-	// this is a collection retrieval and so idpresent should not be set
-	
+	// it could also be that a different request has been made, for example student?order=id.
+	// this is a collection retrieval 
+		
 	$request = explode("/",$ORION_actualRequest);
 	//print_r($request);
 	$numberOfRequestItems = count($request);
@@ -88,16 +74,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     OrionDB_List($tmpInfo);
                     break;
                 case 2:
-                    // we have a refresh, get the id
-                    // take the id and feed it to the refresh function
-                     /*
-                    $tmpInfo = new OrionDB_QueryInfo;
-                    $tmpInfo->tablename = $requestedResource;
-                    // force it to be a number
-                    $tmpId=intval($request[1]);
-                    $tmpInfo->conditions['id'] = $tmpId;
-                    OrionDB_List($tmpInfo);
-                    */
+                    // we have a refresh
                     // when we have a refresh or get request for only one record, don't return
                     // a collection object, but only the record requested.
                     $workingObject = eval("return new " . $requestedResource . "_class;");

@@ -18,7 +18,7 @@ class OrionDB_Query{
   
    /*
    
-   because the createQUery function can be called recursively, and keeping track of 
+   because the createQuery function can be called recursively, and keeping track of 
    changes in PHP cannot be handled by observers (Cocoa and SC are much more fun :) )
    we need a complicated array system to keep track of the changes to be able to
    put WHERE and AND in when necessary.

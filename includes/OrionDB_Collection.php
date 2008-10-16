@@ -53,8 +53,8 @@ class OrionDB_Collection {
         					$currentid = $currentrecord['id'];
         					$newobject = eval("return new " . $tablename . "_class;");
         					$newobject->init($currentid);
-        					$this->records[] = $newobject;
-        					$this->ids[] = $currentid;
+        					$this->records[] = $newobject; // add the new object to the record array
+        					$this->ids[] = $currentid; // idem for the id
         				}	
         			}
         		}

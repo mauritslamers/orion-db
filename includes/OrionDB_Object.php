@@ -181,7 +181,6 @@ class OrionDB_Object {
 				$currentfieldname = $this->_fieldnames[$index];
 				if(property_exists($data,$currentfieldname) && ($currentfieldname != 'id')){ // prevent overwriting of id
 					$currentvalue = eval("return \$data->$currentfieldname;");
-					//$currentvalue = $data[$currentfieldname];
 					//logmessage("Fieldname: " . $currentfieldname . ": " . $currentvalue);
 					if(is_null($currentvalue)){ // checking null
    					$currentvalue = 'NULL';
@@ -194,7 +193,7 @@ class OrionDB_Object {
 					     $currentvalue = mysql_real_escape_string($currentvalue);
 					  }  
 					}
-					// no mysql protection because that has already been care of
+					// no mysql protection because that has already been taken care of
 					$key_value_sets[] = $currentfieldname . "=" . $currentvalue; 
 				}	
 			}	
@@ -205,7 +204,7 @@ class OrionDB_Object {
             logmessage("UPDATE action in object " . $this->_tablename . " with query: " . $query);
 				$errormessage = "Error updating the existing record with id " . $currentid . " in the table " . $this->_tablename;
 				mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
-				// re-init object
+				// re-init object so it will return the correct data
 				$this->init($currentid); 
 			}
 		}
