@@ -1,10 +1,13 @@
 
 How to install OrionDB:
 
+Requirements:
+
+- PHP version 5.2 or later
+- MySQL version 5 or later
 
 - copy the config.php.sample file to config.php and set all the values.
-- if you want to use the log file, make sure it exists and allow the apache user to write to it
-- make sure the .htaccess files are working 
-- make sure your model names match the table names in MySQL (case sensitive!)
-
+- copy the htaccess.sample file to .htaccess and set the rewrite rule according to the example
+- if you want to use the log file, make sure it exists and set up the permissions to allow the apache user to write to it
+- Happy DB-ing!
 
