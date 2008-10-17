@@ -14,7 +14,7 @@ function error($errormessage){
 /// Function to send a specific text to the error log
 /// \param[in] $errormessage The message to be sent
 	global $ORIONDBCFG_logfile;    $t=getdate();    $today=date('r',$t[0]);	
-    error_log($today . ": Error: " . $errormessage . " \n",3,$ORIONDBCFG__logfile);
+    error_log($today . ": Error: " . $errormessage . " \n",3,$ORIONDBCFG_logfile);
 	
 }
 
@@ -24,7 +24,7 @@ function fatalerror($errormessage){
 /// \param[in] $errormessage The message to send to the error log.
 	global $ORIONDBCFG_logfile;
     $t=getdate();    $today=date('r',$t[0]);	
-    error_log($today . ": Fatal Error: " . $errormessage . " \n",3,$ORIONDBCFG__logfile);
+    error_log($today . ": Fatal Error: " . $errormessage . " \n",3,$ORIONDBCFG_logfile);
 	die();	
 }
 
@@ -34,16 +34,16 @@ function logmessage($errormessage){
 /// \param[in] $errormessage The message to send to the error log.	
 	global $ORIONDBCFG_logfile;
     $t=getdate();    $today=date('r',$t[0]);	
-    error_log($today . ": Log Message: " . $errormessage . " \n",3,$ORIONDBCFG__logfile);
+    error_log($today . ": Log Message: " . $errormessage . " \n",3,$ORIONDBCFG_logfile);
 }
 
 
 function fataldberror($errormessage, $query){
 	global $ORIONDBCFG_logfile;
 	$t=getdate();    $today=date('r',$t[0]);	
-    error_log($today . ": Database Error: " . $errormessage . " \n",3,$ORIONDBCFG__logfile);
-	error_log("\t MySQL Error Message: " . mysql_error() . "\n",3,$ORIONDBCFG__logfile);
-	error_log("\t Query where error occurred: " . $query . "\n",3,$ORIONDBCFG__logfile);
+    error_log($today . ": Database Error: " . $errormessage . " \n",3,$ORIONDBCFG_logfile);
+	error_log("\t MySQL Error Message: " . mysql_error() . "\n",3,$ORIONDBCFG_logfile);
+	error_log("\t Query where error occurred: " . $query . "\n",3,$ORIONDBCFG_logfile);
 	die();
 }
 
