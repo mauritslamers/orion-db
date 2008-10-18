@@ -12,7 +12,6 @@ require_once("includes/securitylib.php");
 require_once("includes/commonfunctions.php"); // library containing common functions like error logging
 require_once("includes/OrionDB.php"); // load the framework
 
-// No session support yet
 
 /* 
  * MAIN PROCESS 
@@ -22,7 +21,7 @@ require_once("includes/OrionDB.php"); // load the framework
 // $_SERVER must have both these parameters
 //     [HTTP_X_REQUESTED_WITH] => XMLHttpRequest
 //     [HTTP_X_SPROUTCORE_VERSION] => 1.0
-//print_r($_SERVER);
+print_r($_SERVER);
 
 if(!$ORIONDBCFG_allow_non_sc_clients){  
    $xmlHttpRequestPresent = array_key_exists('HTTP_X_REQUESTED_WITH',$_SERVER);
@@ -33,6 +32,18 @@ if(!$ORIONDBCFG_allow_non_sc_clients){
       die();
    }
 }
+
+/*
+//check whether session support is turned on:
+if($ORIONDBCFG_sessions_active){
+  // load session support
+  require_once('includes/OrionDB_Session.php');
+  // check or set session 
+  
+  session_start();
+}
+
+*/
 
 // process the call 
 if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
