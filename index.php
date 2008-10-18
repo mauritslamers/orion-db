@@ -112,22 +112,29 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
     		   break;
     	   case 'POST':
             //create
-            if(($ORIONDBCFG_auth_module_active) && ($tablename == $ORIONDBCFG_auth_server_resource_name)){
+            //logmessage("Authentication module active: " . $ORIONDBCFG_auth_module_active);
+            //logmessage("Table name = " . $requestedResource);
+            //logmessage("Auth server resource = " . $ORIONDBCFG_auth_server_resource_name);
+            if(($ORIONDBCFG_auth_module_active) && ($requestedResource == $ORIONDBCFG_auth_server_resource_name)){
               // do the auth request
               // get the post
+              logmessage("Authentication server Post");
               $records_in_json = $_POST["records"];
               $recordObject = json_decode($records_in_json);
               // feed the object to the Authentication
-              $tmpObject = new OrionDB_Authentication_class;
+              $tmpObject = new OrionDB_Authentication;
               $authresult = $tmpObject->auth($recordObject);
               if($authresult){
                  // auth success
+                 logmessage("Login success");
               } 
               else {
                 // auth fail
+                logmessage("Login failed");
               }
             } 
             else {
+               logmessage("Normal Post");
                OrionDB_Create($requestedResource); // function will get the post data itself
             }
     		   break;
