@@ -19,6 +19,17 @@
 	$ORIONDBCFG_logfilename = "oriondb.log";
 	$ORIONDBCFG_logfilepath = "/path/to"; 
 	
+	$ORIONDBCFG_allow_non_sc_clients = false;
+	
+	/*
+	Preparations for the sessions and authentication server plugin
+	
+	$ORIONDBCFG_sessions_active = false;
+	
+	$ORIONDBCFG_plugins[] = 'authserver';
+	
+	*/
+	
 	// functionality that absolutely needs to be executed 
 	// creating a valid log file name with path
 	$lastposofslash = strrchr($ORIONDBCFG_logfilepath,"/");

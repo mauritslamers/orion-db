@@ -7,6 +7,8 @@ require_once("includes/OrionDB_Object.php"); // standard database object
 require_once("includes/OrionDB_Collection.php"); // standard database collection object
 require_once('includes/OrionDB_Query.php'); // standard query object classes OrionDB_Query and OrionDB_QueryInfo
 
+
+
 function __autoload($classname){
 	// generate classes on the fly using the $classname and tablename
 	// Classname need to be of the form tablename_class, such as student_class etc
@@ -15,6 +17,7 @@ function __autoload($classname){
 	// get table name from $classname
 	$lastunderscorepos = strrpos($classname,"_");
 	$tablename = substr($classname,0,$lastunderscorepos);
+	//logmessage("Searching for table " . $tablename);
 	
 	// check whether table actually exists in a way that prevents SQL injection
 	$query = "SHOW tables";
@@ -22,31 +25,36 @@ function __autoload($classname){
 	$numrows = mysql_num_rows($result);
 	$tablefound = false;
 	// get the db name
-	global $ORIONDBCFG_MySQLDBname;
+	global $ORIONDBCFG_MySQL_dbname;
 	// compare the class name against the table names in the DB and set $tablefound to true if a match is found
 	if($numrows>0){
 		for($index=0;$index<$numrows;$index++){
 			$currentrecord = mysql_fetch_array($result);
-			$fieldname = "Tables_in_" . $ORIONDBCFG_MySQLDBname;
+			$fieldname = "Tables_in_" . $ORIONDBCFG_MySQL_dbname;
 			$currenttablename = $currentrecord[$fieldname];
+			//logmessage("Comparing " . $currenttablename . " to " . $tablename);
 			if($currenttablename == $tablename){
+			   //logmessage("Table match found");
 				$tablefound = true;	
 			}
 		}	
 		if($tablefound){
 			//match found, create new class
-			$codetoeval = "class $classname extends OrionDB_Object { function __construct(){ parent::__construct('$tablename'); } }";
+			$codetoeval = "class " . $classname . " extends OrionDB_Object {";
+			$codetoeval .= "function __construct(){ parent::__construct('" . $tablename . "'); } }";
 			eval($codetoeval);
+			//logmessage("Generated class " . $classname);
 		} else {
 			// check for external PHP files to include
 			// before requiring the file, check whether it exists
 			$filename = "includes/" . $classname . ".php";
 			if(file_exists($filename)){
-				require_once "includes/" . $classname . '.php';
+				require_once $filename;
+				//logmessage("Loaded external PHP file " . $filename);
 			} else {
 			   // make a log note
 			   logmessage('Autoload did not succeed in finding a decent source to create a class with. Classname:' . $classname);
-				return false;// do nothing for else, unless this breaks things	
+				//return false;// do nothing for else, unless this breaks things	
 			}
 		}
 	}
@@ -59,7 +67,10 @@ function OrionDB_List(OrionDB_QueryInfo $info){
    /// \param[in] $info The data of the request
       
    $list = new OrionDB_Collection($info);
-   echo json_encode($list);
+   if(property_exists($list,'records')){
+      // catch if a OrionDB_Collection object returns empty, because it could not create OrionDB_Object class objects
+      echo json_encode($list);
+   }
    
 }
 

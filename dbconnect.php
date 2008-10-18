@@ -8,7 +8,7 @@ require_once('config.php');
     or die("Could not connect");
 
   // select the database to use
-  mysql_select_db($ORIONDBCFG_MySQLDBname) or die("Could not select database");
+  mysql_select_db($ORIONDBCFG_MySQL_dbname) or die("Could not select database");
 
 
 

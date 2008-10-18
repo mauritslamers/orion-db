@@ -35,8 +35,9 @@ class OrionDB_Collection {
         		// maybe a check whether $tablename contains php code, which seems unlikely as it would violate the URL
         		$tmpobject = eval("return new " . $tablename . "_class;");
         		// if the class does not exist, PHP dies here.
+        		//print_r($tmpobject);
         		
-        		if(is_object($tmpobject)){
+        		if(($tmpobject) && (is_object($tmpobject)) && ($tmpobject instanceof OrionDB_Object_class)){
         			// even when $info->fieldnamelist is set, override it to only get all ids for this table
         			$info->fieldnamelist = "id";
         			//print_r($info);
@@ -58,8 +59,14 @@ class OrionDB_Collection {
         				}	
         			}
         		}
+       		else {
+        		  // this part is executed when the loaded class is not an instance of OrionDB_Object
+        		  // remove the properties to show an empty object
+        		  unset($this->records);
+        		  unset($this->ids);
+        		} 
     		}
-    	} // no else clause, just create an empty collection object.
+    	} // no else clause here, just create an empty collection object.
 	}	
 }
 

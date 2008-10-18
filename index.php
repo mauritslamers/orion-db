@@ -29,6 +29,7 @@ if(!$ORIONDBCFG_allow_non_sc_clients){
    $SCPresent = array_key_exists('HTTP_X_SPROUTCORE_VERSION',$_SERVER);
    if(!($xmlHttpRequestPresent) && !($SCPresent)){
       echo "You do not have permission to access this resource!";
+      logmessage('Attempted access to OrionDB from a non-SC client while this is not allowed in the configuration');
       die();
    }
 }
@@ -36,10 +37,10 @@ if(!$ORIONDBCFG_allow_non_sc_clients){
 // process the call 
 if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
 	
-	global $ORIONCFG_baseURI;
-	$tmpbaseURI = $ORIONCFG_baseURI . "/";
+	global $ORIONDBCFG_baseURI;
+	$tmpbaseURI = $ORIONDBCFG_baseURI . "/";
 	$ORION_actualRequest = substr($_SERVER['REQUEST_URI'],strlen($tmpbaseURI));
-	//echo $ORION_actualRequest;
+	//logmessage("Getting request: " . $ORION_actualRequest);
 	
 	// now we have our actual request 
 	// next find out whether a specific item is being called for, say : student/25 which would be student with id 25
