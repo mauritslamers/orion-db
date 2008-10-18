@@ -6,7 +6,7 @@ OrionDB database Authentication Module
 
 */
 
-class OrionDB_authmodule_ORIONDB {
+class OrionDB_authmodule_ORIONDB_class {
  
    function auth(array $data_array){
      
@@ -41,14 +41,39 @@ class OrionDB_authmodule_ORIONDB {
          $tmpUser->init_by_query($tmpQuery);
          
          // search the user table for the user 
-         
-         if($data_array["passwords_stored_in_md5"]){
-            // The passwords are stored in md5, so make an md5 of the password and check it against
-            
-           // we are given an md5 of the password and need to check against the md5  
-         } else {
-            
-         }
+         if($tmpUser){
+            $password_in_user = eval("return \$tmpUser->" . $passwdfield . ";");
+            if($data_array["passwords_stored_in_md5"]){
+               // The passwords are stored in md5, so make an md5 of the password received and check it against
+               // the md5 from the database
+               if($passwd == $password_in_user){
+                  // valid auth
+                  return true;
+               } 
+               else {
+                  // check whether the password has been sent from SC in cleartext
+                  $md5passwd = md5($passwd);
+                  if($md5passwd == $password_in_user){
+                     // valid auth
+                     return true;
+                  }  
+                  else {
+                     // no valid auth
+                     return false;  
+                  }
+               }
+               
+            } else {
+               if($passwd == $password_in_user){
+                  //valid auth
+                  return true;  
+               } 
+               else {
+                  // no valid auth
+                  return false;   
+               }
+            }
+         } // end if($tmpUser)
       }
    }  // end function auth
    

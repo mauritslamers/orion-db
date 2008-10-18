@@ -32,6 +32,17 @@ class OrionDB_Object {
 		$this->_tablename = $tablename;
 		$this->type = $tablename;
 
+      // get the field names that should not end up in the object according to the configuration
+      global $ORIONDBCFG_filter_field_names;
+      $filterfields = array();
+      if(array_key_exists($tablename,$ORIONDBCFG_filter_field_names)){
+         foreach($ORIONDBCFG_filter_field_names as $key=>$value){
+            if($value){
+               $filterfields[] = $value;  
+            }
+         }
+      }
+
 		$numberofrecords = mysql_num_rows($result);
 		for($index=0;$index<$numberofrecords;$index++){
 			$currentrecord = mysql_fetch_array($result);
@@ -53,11 +64,25 @@ class OrionDB_Object {
 			$this->_fieldlimits[$fieldname] = $fieldtypelimit;
 			$this->_completefieldtypes[$fieldname] = $fieldtypedef;
 			//echo "fieldtypename: $fieldtypename, fieldtypelimit: $fieldtypelimit <br>";
-			// create the property, unless it is a password field
-			
-			$codetoeval = "\$this->$fieldname = '';";
-			$this->_fieldnames[] = $fieldname;
-			eval($codetoeval);
+			// before creating the property and add the fieldname to the $this->_fieldnames array
+			// check whether the field is in the filterfields array
+			if(count($fieldnames) > 0){
+			   // there is something to filter
+			   if(!(in_array($fieldname,$fieldnames,true))){
+			      // if the current field is not in the fieldnames list, set the property
+			      // by not including it in the $this->_fieldnames list, the normal functions will not return the field
+               // except the init_by_query function
+			      $codetoeval = "\$this->$fieldname = '';";
+			      $this->_fieldnames[] = $fieldname;
+			      eval($codetoeval);
+			   }
+			}
+			else {
+			   // no fieldnames to filter? create the fields!
+			   $codetoeval = "\$this->$fieldname = '';";
+			   $this->_fieldnames[] = $fieldname;
+			   eval($codetoeval);
+			}
 		}
 	}	
 
@@ -157,7 +182,6 @@ class OrionDB_Object {
 				eval($codetoeval);
 			} 
       }
-	   
 	}
 		
 	function create(stdClass $data){

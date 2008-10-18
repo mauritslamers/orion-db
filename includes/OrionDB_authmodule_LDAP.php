@@ -6,7 +6,7 @@ OrionDB LDAP authentication module
 
 */
 
-class OrionDB_authmodule_LDAP {
+class OrionDB_authmodule_LDAP_class {
    
    function auth(array $data_array){
       // function to check whether an LDAP authentication can be made
@@ -49,4 +49,3 @@ class OrionDB_authmodule_LDAP {
 
 
 ?>
-

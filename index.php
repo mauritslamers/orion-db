@@ -81,7 +81,9 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     if(($ORIONDBCFG_auth_module_active) && ($tablename == $ORIONDBCFG_auth_server_resource_name)){
                         // handle the authentication information request
                         // This means returning the authentication list
-                        echo "TODO!"
+                        $tmpObject = new OrionDB_Authentication_class;
+                        $tmpObject->return_server_collection();
+                        // die(); // it should end here
                     } else {
                       // handle the request 
                        $tmpInfo = new OrionDB_QueryInfo;
@@ -91,7 +93,6 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                           $tmpInfo->conditions[$key] = $value;
                        }
                        OrionDB_List($tmpInfo);
-                      
                     }
                     break;
                 case 2:
@@ -111,7 +112,24 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
     		   break;
     	   case 'POST':
             //create
-            OrionDB_Create($requestedResource); // function will get the post data itself
+            if(($ORIONDBCFG_auth_module_active) && ($tablename == $ORIONDBCFG_auth_server_resource_name)){
+              // do the auth request
+              // get the post
+              $records_in_json = $_POST["records"];
+              $recordObject = json_decode($records_in_json);
+              // feed the object to the Authentication
+              $tmpObject = new OrionDB_Authentication_class;
+              $authresult = $tmpObject->auth($recordObject);
+              if($authresult){
+                 // auth success
+              } 
+              else {
+                // auth fail
+              }
+            } 
+            else {
+               OrionDB_Create($requestedResource); // function will get the post data itself
+            }
     		   break;
     	   case 'PUT':
     	      //update existing record, so having either /id or a set of records

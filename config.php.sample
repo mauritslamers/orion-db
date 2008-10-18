@@ -31,10 +31,10 @@
 // === Filter settings === //
 	// Next is a list of table names and fieldnames which should not turn up in the results
 	// Set the tablename and the fieldnames.
-	//$ORIONDBCFG_filterfieldnames["tablename"] = ["fieldname1","fieldname2"];  
-   //$ORIONDBCFG_filterfieldnames["tablename"] = ["fieldname1","fieldname2"];
-   //$ORIONDBCFG_filterfieldnames["tablename"] = ["fieldname1","fieldname2"];
-   //$ORIONDBCFG_filterfieldnames["tablename"] = ["fieldname1","fieldname2"];		
+	//$ORIONDBCFG_filter_field_names["tablename"] = ["fieldname1","fieldname2"];  
+   //$ORIONDBCFG_filter_field_names["tablename"] = ["fieldname1","fieldname2"];
+   //$ORIONDBCFG_filter_field_names["tablename"] = ["fieldname1","fieldname2"];
+   //$ORIONDBCFG_filter_field_names["tablename"] = ["fieldname1","fieldname2"];		
 
 
 // === Session settings === //	
@@ -62,14 +62,15 @@
 	$ORIONDBCFG_auth_server[0]["name"] = "name"; // name to show on screen (send back to SC)
    $ORIONDBCFG_auth_server[0]["type"] = "LDAP"; // authentication type
 	$ORIONDBCFG_auth_server[0]["host"] = "subdomain.domain.ext"; // hostname to authenticate against (non-ORIONDB auth only)
+	$ORIONDBCFG_auth_server[0]["active"] = false; // should this authentication server be visible?
 
 	$ORIONDBCFG_auth_server[1]["name"] = "name"; // name to show on the screen (send back to SC)
 	$ORIONDBCFG_auth_server[1]["type"] = "ORIONDB"; // An authentication type which allows authentication against the database	
    $ORIONDBCFG_auth_server[1]["usertable"] = "users"; // the table where user information can be found
    $ORIONDBCFG_auth_server[1]["usernamefield"] = "username"; // the field where the user name can be found
    $ORIONDBCFG_auth_server[1]["passwordfield"] = ["passwd"]; // the field in the tables where password info is stored
-   $ORIONDBCFG_auth_server[1]["passwords_stored_in_md5"] = false; // set whether the passwords in the database are 
-                                                                  // stored in md5
+   $ORIONDBCFG_auth_server[1]["passwords_stored_in_md5"] = false; // set whether the passwords in the database are stored in md5
+   $ORIONDBCFG_auth_server[1]["active"] = false; // should this authentication server be visible?
 	
    $ORIONDBCFG_auth_server_resource_name = "authserver"; // what resource name should trigger the authentication process?
 
