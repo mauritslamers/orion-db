@@ -36,7 +36,7 @@ class OrionDB_Object {
 		for($index=0;$index<$numberofrecords;$index++){
 			$currentrecord = mysql_fetch_array($result);
 			$fieldname = $currentrecord['Field'];
-			$this->_fieldnames[] = $fieldname;
+			
 			// getting varchar(20) to varchar as fieldtypename and 20 as fieldtypelimit
 			$fieldtypedef = $currentrecord['Type'];
 			$parenthesis_open_pos = strpos($fieldtypedef,'(');
@@ -53,8 +53,10 @@ class OrionDB_Object {
 			$this->_fieldlimits[$fieldname] = $fieldtypelimit;
 			$this->_completefieldtypes[$fieldname] = $fieldtypedef;
 			//echo "fieldtypename: $fieldtypename, fieldtypelimit: $fieldtypelimit <br>";
-			// create the property
+			// create the property, unless it is a password field
+			
 			$codetoeval = "\$this->$fieldname = '';";
+			$this->_fieldnames[] = $fieldname;
 			eval($codetoeval);
 		}
 	}	
@@ -113,7 +115,7 @@ class OrionDB_Object {
 	function init($id){
 		$tmpid = cleansql($id);
 		$query = "select * from " . $this->_tablename . " where id = " . $tmpid;
-		logmessage("INIT of object " . $this->_tablename . " with query: " . $query);
+		//logmessage("INIT of object " . $this->_tablename . " with query: " . $query);
 
 		$errormessage = "Error when retrieving a record from table " . $this->_tablename . " with id " . $tmpid;
 		$result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
@@ -137,6 +139,25 @@ class OrionDB_Object {
 		} else {
 			return false;
 		}
+	}
+	
+	function init_by_query(OrionDB_Query $info){   
+	  	$tmpQueryObject = new OrionDB_Query;
+   	$query = $tmpQueryObject->createSelectQuery($info);
+      //logmessage($query);
+      $errormessage="Error when retrieving a record by query from table " . $this->_tablename;
+      $result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
+      $numrows = mysql_num_rows($result);
+      if($numrows == 1){
+         // init the current record with the data  
+         $currentrecord = mysql_fetch_array($result);
+		   for($index=0;$index<count($this->_fieldnames);$index++){
+				$currentfieldname = $this->_fieldnames[$index];
+				$codetoeval = "\$this->$currentfieldname = htmlentities(\$currentrecord['$currentfieldname']);";
+				eval($codetoeval);
+			} 
+      }
+	   
 	}
 		
 	function create(stdClass $data){

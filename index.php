@@ -33,17 +33,16 @@ if(!$ORIONDBCFG_allow_non_sc_clients){
    }
 }
 
-/*
+
 //check whether session support is turned on:
 if($ORIONDBCFG_sessions_active){
   // load session support
   require_once('includes/OrionDB_Session.php');
-  // check or set session 
-  
-  session_start();
+  // start session (will fail if authentication is turned on)
+  OrionDB_Session_start();
 }
 
-*/
+
 
 // process the call 
 if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
@@ -77,13 +76,23 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     $tmpExplodedResource = explode('?',$requestedResource);
                     $tablename = $tmpExplodedResource[0];
                     //let's get the $_GET;
-                    $tmpInfo = new OrionDB_QueryInfo;
-                    // iterate through $_GET
-                    $tmpInfo->tablename = $tablename;
-                    foreach($_GET as $key=>$value){
-                       $tmpInfo->conditions[$key] = $value;
+                    // before getting the information from the database,
+                    // check whether this request is meant for the authentication module
+                    if(($ORIONDBCFG_auth_module_active) && ($tablename == $ORIONDBCFG_auth_server_resource_name)){
+                        // handle the authentication information request
+                        // This means returning the authentication list
+                        echo "TODO!"
+                    } else {
+                      // handle the request 
+                       $tmpInfo = new OrionDB_QueryInfo;
+                       // iterate through $_GET
+                       $tmpInfo->tablename = $tablename;
+                       foreach($_GET as $key=>$value){
+                          $tmpInfo->conditions[$key] = $value;
+                       }
+                       OrionDB_List($tmpInfo);
+                      
                     }
-                    OrionDB_List($tmpInfo);
                     break;
                 case 2:
                     // we have a refresh
