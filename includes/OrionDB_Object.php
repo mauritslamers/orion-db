@@ -36,9 +36,10 @@ class OrionDB_Object {
       global $ORIONDBCFG_filter_field_names;
       $filterfields = array();
       if(array_key_exists($tablename,$ORIONDBCFG_filter_field_names)){
-         foreach($ORIONDBCFG_filter_field_names as $key=>$value){
+         foreach($ORIONDBCFG_filter_field_names[$tablename] as $key=>$value){
             if($value){
                $filterfields[] = $value;  
+               //logmessage("Added field " . $value . " to exclusion list");
             }
          }
       }
@@ -66,16 +67,16 @@ class OrionDB_Object {
 			//echo "fieldtypename: $fieldtypename, fieldtypelimit: $fieldtypelimit <br>";
 			// before creating the property and add the fieldname to the $this->_fieldnames array
 			// check whether the field is in the filterfields array
-			if(count($fieldnames) > 0){
+			if(count($filterfields) > 0){
 			   // there is something to filter
-			   if(!(in_array($fieldname,$fieldnames,true))){
+			   if(!(in_array($fieldname,$filterfields,true))){
 			      // if the current field is not in the fieldnames list, set the property
 			      // by not including it in the $this->_fieldnames list, the normal functions will not return the field
                // except the init_by_query function
 			      $codetoeval = "\$this->$fieldname = '';";
 			      $this->_fieldnames[] = $fieldname;
 			      eval($codetoeval);
-			   }
+			   } 
 			}
 			else {
 			   // no fieldnames to filter? create the fields!
@@ -166,21 +167,24 @@ class OrionDB_Object {
 		}
 	}
 	
-	function init_by_query(OrionDB_Query $info){   
+	function init_by_query(OrionDB_QueryInfo $info){  
+	  /// Function to init an object by QueryInfo object. Used by the ORIONDB authentication module
+	  /// to get the passwords etc. So, it does not filter out the filtered fields set in the config
+	   
 	  	$tmpQueryObject = new OrionDB_Query;
+	  	//print_r($info);
    	$query = $tmpQueryObject->createSelectQuery($info);
       //logmessage($query);
       $errormessage="Error when retrieving a record by query from table " . $this->_tablename;
       $result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
       $numrows = mysql_num_rows($result);
       if($numrows == 1){
-         // init the current record with the data  
+         // init the current record with all data in the record (the filtered fields are in the result)
          $currentrecord = mysql_fetch_array($result);
-		   for($index=0;$index<count($this->_fieldnames);$index++){
-				$currentfieldname = $this->_fieldnames[$index];
-				$codetoeval = "\$this->$currentfieldname = htmlentities(\$currentrecord['$currentfieldname']);";
-				eval($codetoeval);
-			} 
+         foreach($currentrecord as $key => $value){
+				$codetoeval = "\$this->$key = htmlentities($value);";
+				eval($codetoeval);            
+         }
       }
 	}
 		

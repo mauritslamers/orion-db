@@ -82,6 +82,9 @@ private function addSingleKeyValueQuery($key,$value,$valueIsText = false){
 function createSelectQuery(OrionDB_QueryInfo $info){
    $this->_numberOfRecursions++;
    //print_r($info);
+   if($info->fieldnamelist == ""){
+     $info->fieldnamelist = "*";  
+   }
    if(($info->tablename) && ($info->fieldnamelist)){
       $query = "select ". cleansql($info->fieldnamelist) . " from " . cleansql($info->tablename); // setup the start
       $this->_queryUnchanged[$this->_numberOfRecursions] = true; // set the unchanged query flag true

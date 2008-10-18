@@ -19,28 +19,30 @@ class OrionDB_Authentication {
    
      The model for the return data needs to have
      
-     properties: ['authServerId','username','passwd']
+     properties: ['authServerId','user_name','passwd']
    */
       
-   function auth($JSONdata){
+   function auth(stdClass $JSONdata){
       // in the stdObject the following properties need to be present:
       // the user name
       // the password (encrypted or not)
       // the authentication type (id of the $ORIONDBCFG_authserver array in the config file)
       if(is_object($JSONdata)){
-         global $ORIONDBCFG_authserver;
+         //print_r($JSONdata);
+         logmessage("processing auth action");
+         global $ORIONDBCFG_auth_server;
          
-         $authserverpresent = property_exists($JSONdata,'authServerId');
-         $usernamepresent = property_exists($JSONdata,'username');
+         $authserverpresent = property_exists($JSONdata,'auth_server_id');
+         $usernamepresent = property_exists($JSONdata,'user_name');
          $passwordpresent = property_exists($JSONdata,'passwd');
          
          if($authserverpresent && $usernamepresent && $passwordpresent){
             // get the type of the server
-            $authserver = $ORIONDBCFG_authserver[$JSONdata->authServerId];
-            $type = $authserver->type;
+            $authserver = $ORIONDBCFG_auth_server[$JSONdata->auth_server_id];
+            $type = $authserver["type"];
             $tmpObject = eval("return new OrionDB_authmodule_" . $type . ";");
             if($tmpObject){
-               $authserver["username"] = $JSONdata->username;
+               $authserver["user_name"] = $JSONdata->user_name;
                $authserver["passwd"] = $JSONdata->passwd;
                $authresult = $tmpObject->auth($authserver);
                return $authresult; 

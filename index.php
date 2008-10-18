@@ -120,7 +120,8 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
               // get the post
               logmessage("Authentication server Post");
               $records_in_json = $_POST["records"];
-              $recordObject = json_decode($records_in_json);
+              $recordArray= json_decode($records_in_json);
+              $recordObject = $recordArray[0];
               // feed the object to the Authentication
               $tmpObject = new OrionDB_Authentication;
               $authresult = $tmpObject->auth($recordObject);

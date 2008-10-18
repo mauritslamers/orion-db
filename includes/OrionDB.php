@@ -67,6 +67,7 @@ function OrionDB_List(OrionDB_QueryInfo $info){
    /// \param[in] $info The data of the request
       
    $list = new OrionDB_Collection($info);
+   //print_r($list);
    if(property_exists($list,'records')){
       // catch if a OrionDB_Collection object returns empty, because it could not create OrionDB_Object class objects
       echo json_encode($list);

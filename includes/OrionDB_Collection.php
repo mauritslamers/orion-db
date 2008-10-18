@@ -37,7 +37,7 @@ class OrionDB_Collection {
         		// if the class does not exist, PHP dies here.
         		//print_r($tmpobject);
         		
-        		if(($tmpobject) && (is_object($tmpobject)) && ($tmpobject instanceof OrionDB_Object_class)){
+        		if(($tmpobject) && (is_object($tmpobject)) && ($tmpobject instanceof OrionDB_Object)){
         			// even when $info->fieldnamelist is set, override it to only get all ids for this table
         			$info->fieldnamelist = "id";
         			//print_r($info);
