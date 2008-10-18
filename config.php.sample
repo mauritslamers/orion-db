@@ -6,6 +6,11 @@
  *
  * 
  */
+ 
+ // === Setting up some variables | Do NOT comment, remove or change! === //
+ 
+ 	$ORIONDBCFG_auth_server = array();
+ 	$ORIONDBCFG_filter_field_names = array();
 
  //=== Database settings === //
  
@@ -31,10 +36,10 @@
 // === Filter settings === //
 	// Next is a list of table names and fieldnames which should not turn up in the results
 	// Set the tablename and the fieldnames.
-	//$ORIONDBCFG_filter_field_names["tablename"] = ["fieldname1","fieldname2"];  
-   //$ORIONDBCFG_filter_field_names["tablename"] = ["fieldname1","fieldname2"];
-   //$ORIONDBCFG_filter_field_names["tablename"] = ["fieldname1","fieldname2"];
-   //$ORIONDBCFG_filter_field_names["tablename"] = ["fieldname1","fieldname2"];		
+	//$ORIONDBCFG_filter_field_names["tablename"] = array("fieldname1","fieldname2");  
+   //$ORIONDBCFG_filter_field_names["tablename"] = array("fieldname1","fieldname2");
+   //$ORIONDBCFG_filter_field_names["tablename"] = array("fieldname1","fieldname2");
+   //$ORIONDBCFG_filter_field_names["tablename"] = array("fieldname1","fieldname2");		
 
 
 // === Session settings === //	
@@ -58,7 +63,13 @@
 	$ORIONDBCFG_auth_module_active = false;  // activate the authserver plugin
 	$ORIONDBCFG_auth_module_only_valid_user_session = true; // force the user to be successfully authenticated
 	                                                        // before starting a session. 
-	$ORIONDBCFG_auth_types = ["ORIONDB","LDAP"]; // Authentication types ORIONDB should be aware of
+
+   // create a line like this for every auth server
+   $ORIONDBCFG_auth_server[0] = array();  
+  	$ORIONDBCFG_auth_server[1] = array();  
+  	//$ORIONDBCFG_auth_server[2] = array(); 
+
+   // the actual settings per server
 	$ORIONDBCFG_auth_server[0]["name"] = "name"; // name to show on screen (send back to SC)
    $ORIONDBCFG_auth_server[0]["type"] = "LDAP"; // authentication type
 	$ORIONDBCFG_auth_server[0]["host"] = "subdomain.domain.ext"; // hostname to authenticate against (non-ORIONDB auth only)

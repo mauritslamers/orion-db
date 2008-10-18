@@ -21,7 +21,7 @@ require_once("includes/OrionDB.php"); // load the framework
 // $_SERVER must have both these parameters
 //     [HTTP_X_REQUESTED_WITH] => XMLHttpRequest
 //     [HTTP_X_SPROUTCORE_VERSION] => 1.0
-print_r($_SERVER);
+//print_r($_SERVER);
 
 if(!$ORIONDBCFG_allow_non_sc_clients){  
    $xmlHttpRequestPresent = array_key_exists('HTTP_X_REQUESTED_WITH',$_SERVER);
@@ -81,7 +81,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     if(($ORIONDBCFG_auth_module_active) && ($tablename == $ORIONDBCFG_auth_server_resource_name)){
                         // handle the authentication information request
                         // This means returning the authentication list
-                        $tmpObject = new OrionDB_Authentication_class;
+                        $tmpObject = new OrionDB_Authentication;
                         $tmpObject->return_server_collection();
                         // die(); // it should end here
                     } else {

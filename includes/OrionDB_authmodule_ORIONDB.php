@@ -6,7 +6,7 @@ OrionDB database Authentication Module
 
 */
 
-class OrionDB_authmodule_ORIONDB_class {
+class OrionDB_authmodule_ORIONDB {
  
    function auth(array $data_array){
      

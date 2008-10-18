@@ -8,7 +8,7 @@ OrionDB_Authentication: an authentication module for OrionDB
 */
 
 
-class OrionDB_Authentication_class {
+class OrionDB_Authentication {
    
    /*
      The model for the server display only needs the following code:
@@ -35,7 +35,7 @@ class OrionDB_Authentication_class {
          // get the type of the server
          $authserver = $ORIONDBCFG_authserver[$JSONdata->authServerId];
          $type = $authserver->type;
-         $tmpObject = eval("return new OrionDB_authmodule_" . $type . "_class;");
+         $tmpObject = eval("return new OrionDB_authmodule_" . $type . ";");
          if($tmpObject){
             $authserver["username"] = $JSONdata->username;
             $authserver["passwd"] = $JSONdata->passwd;
@@ -48,10 +48,10 @@ class OrionDB_Authentication_class {
    function return_server_collection(){
      // this function creates a collection for a SC login client with all authentication servers in the 
      // config file
-     global $ORIONDBCFG_authserver;
+     global $ORIONDBCFG_auth_server;
      $servers = array();
      
-     foreach($ORIONDBCFG_authserver as $key=>$value){
+     foreach($ORIONDBCFG_auth_server as $key => $value){
        if($value["active"]){
          // server active
          $servers[] = $value;
