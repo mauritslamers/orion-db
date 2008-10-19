@@ -124,7 +124,7 @@ class OrionDB_Object {
          $charpos = strpos($tmpType,'char');
          $textpos = strpos($tmpType,'text');
          $datepos = strpos($tmpType,'date');
-         logmessage("Typename of " . $fieldname . " = " . $tmpType);
+         //logmessage("Typename of " . $fieldname . " = " . $tmpType);
          if($charpos || $textpos || ($tmpType == 'date') || ($tmpType == 'timestamp')){
             return true;
          } 
@@ -181,10 +181,15 @@ class OrionDB_Object {
       if($numrows == 1){
          // init the current record with all data in the record (the filtered fields are in the result)
          $currentrecord = mysql_fetch_array($result);
-         foreach($currentrecord as $key => $value){
-				$codetoeval = "\$this->$key = htmlentities($value);";
-				eval($codetoeval);            
+         //print_r($currentrecord);
+         $numfields = mysql_num_fields($result);
+         for($index=0;$index<$numfields;$index++){
+            $currentfieldname = mysql_field_name($result,$index);
+            $currentfieldvalue = $currentrecord[$index];
+            $codetoeval = "\$this->$currentfieldname = '$currentfieldvalue';";
+            eval($codetoeval);
          }
+         //print_r($this);
       }
 	}
 		

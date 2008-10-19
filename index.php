@@ -118,7 +118,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
             if(($ORIONDBCFG_auth_module_active) && ($requestedResource == $ORIONDBCFG_auth_server_resource_name)){
               // do the auth request
               // get the post
-              logmessage("Authentication server Post");
+              //logmessage("Authentication server Post");
               $records_in_json = $_POST["records"];
               $recordArray= json_decode($records_in_json);
               $recordObject = $recordArray[0];
@@ -127,15 +127,15 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
               $authresult = $tmpObject->auth($recordObject);
               if($authresult){
                  // auth success
-                 logmessage("Login success");
+                 logmessage("Login success: User:" . $recordObject->user_name);
               } 
               else {
                 // auth fail
-                logmessage("Login failed");
+                logmessage("Login failed: User:" . $recordObject->user_name);
               }
             } 
             else {
-               logmessage("Normal Post");
+               //logmessage("Normal Post");
                OrionDB_Create($requestedResource); // function will get the post data itself
             }
     		   break;

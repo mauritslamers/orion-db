@@ -29,7 +29,7 @@ class OrionDB_Authentication {
       // the authentication type (id of the $ORIONDBCFG_authserver array in the config file)
       if(is_object($JSONdata)){
          //print_r($JSONdata);
-         logmessage("processing auth action");
+         //logmessage("processing auth action");
          global $ORIONDBCFG_auth_server;
          
          $authserverpresent = property_exists($JSONdata,'auth_server_id');

@@ -35,19 +35,18 @@ class OrionDB_authmodule_ORIONDB {
          $table = $data_array["usertable"];
          $passwdfield = $data_array["passwordfield"];
          $usernamefield = $data_array["usernamefield"];
-         
-         
+            
          $tmpUser = eval("return new " . $table . "_class;");
          $tmpQueryInfo = new OrionDB_QueryInfo;
          $tmpQueryInfo->tablename = $table;
          $tmpQueryInfo->conditions[$usernamefield] = $user;
          $tmpUser->init_by_query($tmpQueryInfo);
          
-         print_r($tmpUser);
+         //print_r($tmpUser);
          // search the user table for the user 
          if($tmpUser){
             $password_in_user = eval("return \$tmpUser->" . $passwdfield . ";");
-            //logmessage($password_in_user);
+            //logmessage("password in db: " . $password_in_user);
             if($data_array["passwords_stored_in_md5"]){
                // The passwords are stored in md5, so make an md5 of the password received and check it against
                // the md5 from the database
@@ -58,6 +57,8 @@ class OrionDB_authmodule_ORIONDB {
                else {
                   // check whether the password has been sent from SC in cleartext
                   $md5passwd = md5($passwd);
+                  //logmessage("MD5 Passwd: " . $md5passwd);
+                  //logmessage("Crypt Passwd: " . sha1(sha1($passwd)));
                   if($md5passwd == $password_in_user){
                      // valid auth
                      return true;
