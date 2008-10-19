@@ -45,7 +45,11 @@ class OrionDB_Authentication {
                $authserver["user_name"] = $JSONdata->user_name;
                $authserver["passwd"] = $JSONdata->passwd;
                $authresult = $tmpObject->auth($authserver);
-               return $authresult; 
+               //return $authresult; 
+               if($authresult){
+                 require_once('includes/OrionDB_Session.php');
+                 OrionDB_Session_start($authresult);  
+               }
             }
          }
       }
