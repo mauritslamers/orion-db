@@ -83,7 +83,16 @@
    $ORIONDBCFG_auth_server[1]["passwords_stored_in_md5"] = false; // set whether the passwords in the database are stored in md5
    $ORIONDBCFG_auth_server[1]["active"] = false; // should this authentication server be visible?
 	
-   $ORIONDBCFG_auth_server_resource_name = "authserver"; // what resource name should trigger the authentication process?
+   $ORIONDBCFG_auth_server_resource_name = "authserver"; // what resource name should trigger returning the auth options?
+                                                         // if the auth module is not active, this setting will be ignored
+                                                         // The model name in SC for a authserver list must be the same
+
+   $ORIONDBCFG_system_state_resource_name = "systemstate"; // what resource name should trigger the authentication process?
+                                                         // if the auth module is not active, this setting will be ignored
+                                                         // The model name in SC for a authserver list must be the same
+
+   $ORIONDBCFG_return_system_state_info = true; // Setting to provide SC with some system state info, very useful if a SC login
+                                                // client is used with access to different client
 
 
 // === End of user settings === //

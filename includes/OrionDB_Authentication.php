@@ -8,6 +8,7 @@ OrionDB_Authentication: an authentication module for OrionDB
 */
 
 
+
 class OrionDB_Authentication {
    
    /*
@@ -17,9 +18,14 @@ class OrionDB_Authentication {
      
      properties: ['id','name']
    
-     The model for the return data needs to have
+     The model for the POST data needs to have
      
-     properties: ['authServerId','user_name','passwd']
+     properties: ['id','authServerId','user_name','passwd','loginStatus','preferredClient']
+     
+     of which the authServerId,username and password need to be set.
+     OrionDB will return the entire model except the password (of course).
+     preferredclient will only have a value when loggedin is true and only the first time it is returned
+     
    */
       
    function auth(stdClass $JSONdata){
@@ -49,6 +55,19 @@ class OrionDB_Authentication {
                if($authresult){
                  require_once('includes/OrionDB_Session.php');
                  OrionDB_Session_start($authresult);  
+                 // now return the proper data
+                 // first get the temp guid for the posted record as we need to return it
+                 $tmpSystemState = new OrionDB_SystemState;
+                 $tmpSystemState->id = 1;
+                 $tmpSystemState->_guid = $JSONdata->_guid;
+                 $tmpSystemState->user_name = $JSONdata->user_name;
+                 $tmpSystemState->login_status = true;
+                 $tmpSystemState->preferred_client = 'admissionexam'; // hardcoding the client for the moment
+                 echo json_encode($tmpSystemState);
+                 
+                 // setting the session data
+                 $_SESSION['systemstate'] = $tmpSystemState;
+                 return true;
                }
             }
          }
@@ -71,7 +90,7 @@ class OrionDB_Authentication {
      if(count($servers)>0){
        // active authentication servers found
        // create an empty collection object
-       $tmpCol = new OrionDB_Collection();
+       $tmpCol = new OrionDB_Collection;
        foreach($servers as $key => $value){
          $newRecord = new stdClass;
          $newRecord->id = $value['id'];

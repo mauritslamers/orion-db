@@ -39,7 +39,9 @@ if($ORIONDBCFG_sessions_active){
   // load session support
   require_once('includes/OrionDB_Session.php');
   // start session (will fail if authentication is turned on)
-  OrionDB_Session_start();
+  logmessage("Trying to start session");
+  $result = OrionDB_Session_start();
+  logmessage("session start trial result: " . $result);
 }
 
 
@@ -47,7 +49,7 @@ if($ORIONDBCFG_sessions_active){
 // process the call 
 if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
 	
-	global $ORIONDBCFG_baseURI;
+	//global $ORIONDBCFG_baseURI;
 	$tmpbaseURI = $ORIONDBCFG_baseURI . "/";
 	$ORION_actualRequest = substr($_SERVER['REQUEST_URI'],strlen($tmpbaseURI));
 	//logmessage("Getting request: " . $ORION_actualRequest);
@@ -78,11 +80,43 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     //let's get the $_GET;
                     // before getting the information from the database,
                     // check whether this request is meant for the authentication module
-                    if(($ORIONDBCFG_auth_module_active) && ($tablename == $ORIONDBCFG_auth_server_resource_name)){
+                    if(($ORIONDBCFG_auth_module_active) && (($tablename==$ORIONDBCFG_auth_server_resource_name) || 
+                           ($tablename == $ORIONDBCFG_system_state_resource_name)) ){
                         // handle the authentication information request
                         // This means returning the authentication list
-                        $tmpObject = new OrionDB_Authentication;
-                        $tmpObject->return_server_collection();
+                        logmessage("Requested action: " . $tablename);
+                        if($tablename == $ORIONDBCFG_auth_server_resource_name){
+                            logmessage("Returning server list");
+                            $tmpObject = new OrionDB_Authentication;
+                            $tmpObject->return_server_collection();
+                        }
+                        if($tablename == $ORIONDBCFG_system_state_resource_name){
+                           //print_r($_SESSION);
+                           if($_SESSION){
+                              // if session exists
+                              //print_r($_SESSION);
+                              if(array_key_exists('systemstate',$_SESSION)){
+                                 $tmpState = $_SESSION['systemstate'];
+                                 unset($tmpState->_guid);
+                                 $tmpObject = new OrionDB_Collection;
+                                 $tmpObject->records[] = $tmpState;
+                                 $tmpObject->ids[] = 1;
+                                  echo json_encode($tmpObject);  
+                              }
+                           } 
+                           else {
+                             // if no session, return a not logged in status
+                             // which equals the action -> return to the login screen in SC
+                             $tmpState = new stdClass;
+                             $tmpState->guid = 1;
+                             //$tmpState->preferred_client = 'login';
+                             $tmpState->login_status = false;
+                             $tmpObject = new OrionDB_Collection;
+                             $tmpObject->records[] = $tmpState;
+                             $tmpObject->ids[] = 1;
+                             echo json_encode($tmpObject);
+                           }
+                        }
                         // die(); // it should end here
                     } else {
                       // handle the request 
@@ -115,7 +149,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
             //logmessage("Authentication module active: " . $ORIONDBCFG_auth_module_active);
             //logmessage("Table name = " . $requestedResource);
             //logmessage("Auth server resource = " . $ORIONDBCFG_auth_server_resource_name);
-            if(($ORIONDBCFG_auth_module_active) && ($requestedResource == $ORIONDBCFG_auth_server_resource_name)){
+ /*           if(($ORIONDBCFG_auth_module_active) && ($requestedResource == $ORIONDBCFG_system_state_resource_name)){
               // do the auth request
               // get the post
               //logmessage("Authentication server Post");
@@ -134,10 +168,10 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                 logmessage("Login failed: User:" . $recordObject->user_name);
               }
             } 
-            else {
+            else { */
                //logmessage("Normal Post");
                OrionDB_Create($requestedResource); // function will get the post data itself
-            }
+ //           }
     		   break;
     	   case 'PUT':
     	      //update existing record, so having either /id or a set of records
@@ -160,7 +194,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     die();  
                 }
                 $recordJSON = substr($putdata,strlen('records='));
-                logmessage($recordJSON);
+                //logmessage($recordJSON);
                 //print_r(json_decode($recordJSON));
                 $JSONObject = json_decode($recordJSON);
             }
@@ -168,19 +202,47 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
             // The object is an array so iterate through it
             // create a working object of the correct type
             if($JSONObject){
-               $output = array();
-                $workingObject = eval("return new ". $requestedResource ."_class;");
-                if($workingObject){
-                   foreach($JSONObject as $key=>$value){
-                     //logmessage("Processing PUT object array item $key");
-                     $workingObject->update($value);
-                     $output[] = clone $workingObject;
-                   }
-                   echo json_encode($output);
-               }
+               //catch auth request
+                //logmessage("Authentication module active: " . $ORIONDBCFG_auth_module_active);
+               //logmessage("Table name = " . $requestedResource);
+               //logmessage("Auth server resource = " . $ORIONDBCFG_auth_server_resource_name);
+               if(($ORIONDBCFG_auth_module_active) && ($requestedResource == $ORIONDBCFG_system_state_resource_name)){
+                 // do the auth request
+                 // get the post
+                 //logmessage("Authentication server Post");
+                 
+                 //$records_in_json = $_POST["records"];
+                 //$recordArray= json_decode($records_in_json);
+                 //$recordObject = $recordArray[0];
+                 $recordObject = $JSONObject;
+                 // feed the object to the Authentication
+                 $tmpObject = new OrionDB_Authentication;
+                 $authresult = $tmpObject->auth($recordObject);
+                 if($authresult){
+                    // auth success
+                    logmessage("Login success: User:" . $recordObject->user_name);
+                 } 
+                 else {
+                   // auth fail
+                   logmessage("Login failed: User:" . $recordObject->user_name);
+                 }
+               } 
                else {
-                 logmessage('No proper working model for update');  
-               }
+                  
+                   $output = array();
+                   $workingObject = eval("return new ". $requestedResource ."_class;");
+                   if($workingObject){
+                      foreach($JSONObject as $key=>$value){
+                        //logmessage("Processing PUT object array item $key");
+                        $workingObject->update($value);
+                        $output[] = clone $workingObject;
+                      }
+                      echo json_encode($output);                  
+                  }
+                  else {
+                    logmessage('No proper working model for update');  
+                  }
+               } 
             }
             else {
               logmessage('No proper JSON data!');
