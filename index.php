@@ -167,6 +167,11 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     die();  
                 }
                 $recordJSON = substr($putdata,strlen('records='));
+                if(substr($recordJSON,strlen($recordJSON) - 3) == '&_='){
+                  // talking to safari which attaches &_= to every post for some strange reason
+                  // so let's remove the last three stray items...
+                  $recordJSON = substr($recordJSON,0,strlen($recordJSON) - 3);
+                }
                 logmessage($recordJSON);
                 //print_r(json_decode($recordJSON));
                 $JSONObject = json_decode($recordJSON);
