@@ -179,40 +179,28 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                 //logmessage("Authentication module active: " . $ORIONDBCFG_auth_module_active);
                //logmessage("Table name = " . $requestedResource);
                //logmessage("Auth server resource = " . $ORIONDBCFG_auth_server_resource_name);
-               if(($ORIONDBCFG_auth_module_active) && ($requestedResource == $ORIONDBCFG_system_state_resource_name)){
-                 // do the auth request
-                 //logmessage("Authentication server Put");
-                 
-                 $recordObject = $JSONObject[0];
-                 //print_r($recordObject);
-                 // feed the object to the Authentication
-                 $tmpObject = new OrionDB_Authentication;
-                 $authresult = $tmpObject->auth($recordObject);
-                 if($authresult){
-                    // auth success
-                    logmessage("Login success: User:" . $recordObject->user_name);
-                 } 
-                 else {
-                   // auth fail
-                   logmessage("Login failed: User:" . $recordObject->user_name);
-                 }
-               } 
+               if($ORIONDBCFG_auth_module_active){
+                  $tmpObject = new OrionDB_Authentication;
+                  $result = $tmpObject->process_put_request($requestedResource, $JSONObject);
+                  // as with the get, the process function will return true when allowed to continue
+                  if(!$result){
+                    // no continue allowed or the process function has handled it 
+                    die();  
+                  }
+               }       
+               $output = array();
+               $workingObject = eval("return new ". $requestedResource ."_class;");
+               if($workingObject){
+                  foreach($JSONObject as $key=>$value){
+                  //logmessage("Processing PUT object array item $key");
+                  $workingObject->update($value);
+                  $output[] = clone $workingObject;
+                  }
+                  echo json_encode($output);                  
+               }
                else {
-                  
-                   $output = array();
-                   $workingObject = eval("return new ". $requestedResource ."_class;");
-                   if($workingObject){
-                      foreach($JSONObject as $key=>$value){
-                        //logmessage("Processing PUT object array item $key");
-                        $workingObject->update($value);
-                        $output[] = clone $workingObject;
-                      }
-                      echo json_encode($output);                  
-                  }
-                  else {
-                    logmessage('No proper working model for update');  
-                  }
-               } 
+                  logmessage('No proper working model for update');  
+               }
             }
             else {
               logmessage('No proper JSON data!');

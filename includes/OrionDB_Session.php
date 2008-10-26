@@ -116,12 +116,8 @@ function OrionDB_Session_start($validuser = false){
     
     
     //start the session
-    if(!(OrionDB_Check_cookie())){
-      // only set this stuff if no cookie has been found
-       session_set_cookie_params($expire_time,$ORIONDBCFG_baseURI,$hostname,$ORIONDBCFG_cookie_only_secure);
-       session_name($session_name);
-    }
-    
+    session_set_cookie_params($expire_time,$ORIONDBCFG_baseURI,$hostname,$ORIONDBCFG_cookie_only_secure);
+    session_name($session_name);
     session_start();
     return true;
  

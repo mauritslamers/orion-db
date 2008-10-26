@@ -73,6 +73,10 @@ class OrionDB_Authentication {
                  
                  return true;
                }
+               else {
+                 $this->return_logged_out_system_state(); 
+                 return false;  
+               }
             }
          }
       }
@@ -107,8 +111,8 @@ class OrionDB_Authentication {
      }
    }
   
-   function return_logged_out_system_state(){
-      $tmpState = new stdClass;
+   function return_logged_out_system_state_collection(){
+      $tmpState = new OrionDB_SystemState;
       $tmpState->guid = 1;
       //$tmpState->preferred_client = 'login';
       $tmpState->login_status = false;
@@ -117,8 +121,16 @@ class OrionDB_Authentication {
       $tmpObject->ids[] = 1;
       echo json_encode($tmpObject);  
    }
+
+   function return_logged_out_system_state(){
+      $tmpState = new OrionDB_SystemState;
+      $tmpState->guid = 1;
+      //$tmpState->preferred_client = 'login';
+      $tmpState->login_status = false;
+      echo json_encode($tmpState);  
+   }
    
-   function return_system_state(){
+   function return_system_state_collection(){
       //print_r($_SESSION);
       logmessage("Returning system state in PHP session array");
       $tmpState = OrionDB_Session_get_information();
@@ -164,21 +176,91 @@ class OrionDB_Authentication {
          // check whether the system state is requested
          if($requestname == $ORIONDBCFG_system_state_resource_name){
             // this get request is a bit different, as it becomes important whether the user is authenticated or not
-            // as this requires differen
+            // as this requires different responses
             if($OrionDB_SessionPresent){
-               $this->return_system_state();
+               $this->return_system_state_collection();
                return false; // end execution and return false to indicate a no continue
             }
             else {
-               $this->return_logged_out_system_state();
+               $this->return_logged_out_system_state_collection();
+               // force the user out
                return false; // end execution
             }
          }
          
          // other 
-         
-         return true; 
+         if($OrionDB_SessionPresent){
+            return true; 
+         } 
+       /*  else {
+           // session no longer valid, so return a system state object
+           $this->return_logged_out_system_state();
+           // force the user out
+           return false; // end execution  
+         } */
       }
+      
+   } // end process_get_request()
+   
+   function process_put_request($resource = "", $json_object = null){
+
+      global $ORIONDBCFG_system_state_resource_name;
+      global $OrionDB_SessionPresent;
+      if($resource && $json_object){
+         if($resource == $ORIONDBCFG_system_state_resource_name){
+            // auth request.
+            $authresult = $this->auth($json_object[0]);
+            if($authresult){
+               // logmessage('Login success');
+              return false; // don't allow to go on
+            }
+            else {
+               // logmessage('login fail');
+              return false; // don't allow to go on
+            }
+         } 
+         else {
+            if($OrionDB_SessionPresent){
+               // allow to continue
+               return true;
+            }
+            else {
+              // send back a logout system state?
+              //$this->return_logged_out_system_state(); 
+              // does not seem to work sadly enough...
+            }
+             
+         }
+      }
+      else {
+        // if no resource or json object return false to prevent further execution of anything
+        return false;  
+      }
+      
+
+
+
+/*
+               
+               if(($ORIONDBCFG_auth_module_active) && ($requestedResource == $ORIONDBCFG_system_state_resource_name)){
+                 // do the auth request
+                 //logmessage("Authentication server Put");
+                 
+                 $recordObject = $JSONObject[0];
+                 //print_r($recordObject);
+                 // feed the object to the Authentication
+                 $tmpObject = new OrionDB_Authentication;
+                 $authresult = $tmpObject->auth($recordObject);
+                 if($authresult){
+                    // auth success
+                    logmessage("Login success: User:" . $recordObject->user_name);
+                 } 
+                 else {
+                   // auth fail
+                   logmessage("Login failed: User:" . $recordObject->user_name);
+                 }
+               } */
+      
       
    }
 
