@@ -6,7 +6,7 @@ class OrionDB_Collection {
 	public $records = array();
 	public $ids = array();
 	
-	function __construct($info){
+	function __construct($info = null){
 	  /// function to construct the collection object
 	  /// \param[in] $info An object containing at least the property tablename
 	  

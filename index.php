@@ -23,6 +23,8 @@ require_once("includes/OrionDB.php"); // load the framework
 //     [HTTP_X_SPROUTCORE_VERSION] => 1.0
 //print_r($_SERVER);
 
+$OrionDB_SessionPresent = false;
+
 if(!$ORIONDBCFG_allow_non_sc_clients){  
    $xmlHttpRequestPresent = array_key_exists('HTTP_X_REQUESTED_WITH',$_SERVER);
    $SCPresent = array_key_exists('HTTP_X_SPROUTCORE_VERSION',$_SERVER);
@@ -34,13 +36,16 @@ if(!$ORIONDBCFG_allow_non_sc_clients){
 }
 
 
-//check whether session support is turned on:
-if($ORIONDBCFG_sessions_active){
+//check whether session support is turned on or authorisation is activated.
+if($ORIONDBCFG_sessions_active || $ORIONDBCFG_auth_module_active){
   // load session support
   require_once('includes/OrionDB_Session.php');
-  // start session (will fail if authentication is turned on)
+  // start session (will fail if authentication is turned on and the user has not authenticated yet)
   logmessage("Trying to start session");
   $result = OrionDB_Session_start();
+  if($result){
+      $OrionDB_SessionPresent = true;
+  }  
   logmessage("session start trial result: " . $result);
 }
 
@@ -70,6 +75,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
             // list and refresh
             //with /id for one (refresh)
             // with ?order=x for list
+                        
             $parameters = array();
             switch($numberOfRequestItems){
                 case 1:
@@ -80,59 +86,51 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     //let's get the $_GET;
                     // before getting the information from the database,
                     // check whether this request is meant for the authentication module
-                    if(($ORIONDBCFG_auth_module_active) && (($tablename==$ORIONDBCFG_auth_server_resource_name) || 
-                           ($tablename == $ORIONDBCFG_system_state_resource_name)) ){
-                        // handle the authentication information request
-                        // This means returning the authentication list
-                        logmessage("Requested action: " . $tablename);
-                        if($tablename == $ORIONDBCFG_auth_server_resource_name){
-                            logmessage("Returning server list");
-                            $tmpObject = new OrionDB_Authentication;
-                            $tmpObject->return_server_collection();
-                        }
-                        if($tablename == $ORIONDBCFG_system_state_resource_name){
-                           //print_r($_SESSION);
-                           if($_SESSION){
-                              // if session exists
-                              //print_r($_SESSION);
-                              if(array_key_exists('systemstate',$_SESSION)){
-                                 $tmpState = $_SESSION['systemstate'];
-                                 unset($tmpState->_guid);
-                                 $tmpObject = new OrionDB_Collection;
-                                 $tmpObject->records[] = $tmpState;
-                                 $tmpObject->ids[] = 1;
-                                  echo json_encode($tmpObject);  
-                              }
-                           } 
-                           else {
-                             // if no session, return a not logged in status
-                             // which equals the action -> return to the login screen in SC
-                             $tmpState = new stdClass;
-                             $tmpState->guid = 1;
-                             //$tmpState->preferred_client = 'login';
-                             $tmpState->login_status = false;
-                             $tmpObject = new OrionDB_Collection;
-                             $tmpObject->records[] = $tmpState;
-                             $tmpObject->ids[] = 1;
-                             echo json_encode($tmpObject);
-                           }
-                        }
-                        // die(); // it should end here
-                    } else {
-                      // handle the request 
-                       $tmpInfo = new OrionDB_QueryInfo;
-                       // iterate through $_GET
-                       $tmpInfo->tablename = $tablename;
-                       foreach($_GET as $key=>$value){
-                          $tmpInfo->conditions[$key] = $value;
-                       }
-                       OrionDB_List($tmpInfo);
+                    if($ORIONDBCFG_auth_module_active){
+                      // get the auth object and feed it the table name
+                      // the function returns either true or false to allow continuation of the program
+                      // it checks whether the request is intended for system state requests or login stuff
+                      // and also checks whether the user is authorised to load this data
+                      // it returns false when it has handled the stuff itself, or when the user is not allowed to have the stuff
+                      $tmpAuthObject = new OrionDB_Authentication;
+                      $authResult = $tmpAuthObject->process_get_request($tablename);
+                      if(!$authResult){
+                        // not allowed to get anything or it has handled the request itself
+                        // so terminate
+                        die();
+                      }
+                      // 
                     }
+                    // if we get here, everything is ok.
+                    // handle the request 
+                    $tmpInfo = new OrionDB_QueryInfo;
+                    // iterate through $_GET
+                    $tmpInfo->tablename = $tablename;
+                    foreach($_GET as $key=>$value){
+                       $tmpInfo->conditions[$key] = $value;
+                    }
+                    OrionDB_List($tmpInfo);
                     break;
                 case 2:
                     // we have a refresh
                     // when we have a refresh or get request for only one record, don't return
                     // a collection object, but only the record requested.
+                    if($ORIONDBCFG_auth_module_active){
+                      // get the auth object and feed it the table name
+                      // the function returns either true or false to allow continuation of the program
+                      // it checks whether the request is intended for system state requests or login stuff
+                      // and also checks whether the user is authorised to load this data
+                      // it returns false when it has handled the stuff itself, or when the user is not allowed to have the stuff
+                      $tmpAuthObject = new OrionDB_Authentication;
+                      $authResult = $tmpAuthObject->process_get_request($tablename);
+                      if(!$authResult){
+                        // not allowed to get anything or it has handled the request itself
+                        // so terminate
+                        die();
+                      }
+                      // 
+                    }
+                    // if we get here, everything is ok.
                     $workingObject = eval("return new " . $requestedResource . "_class;");
                     $tmpId=intval($request[1]);
                     $workingObject->init($tmpId);
@@ -146,32 +144,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
     		   break;
     	   case 'POST':
             //create
-            //logmessage("Authentication module active: " . $ORIONDBCFG_auth_module_active);
-            //logmessage("Table name = " . $requestedResource);
-            //logmessage("Auth server resource = " . $ORIONDBCFG_auth_server_resource_name);
- /*           if(($ORIONDBCFG_auth_module_active) && ($requestedResource == $ORIONDBCFG_system_state_resource_name)){
-              // do the auth request
-              // get the post
-              //logmessage("Authentication server Post");
-              $records_in_json = $_POST["records"];
-              $recordArray= json_decode($records_in_json);
-              $recordObject = $recordArray[0];
-              // feed the object to the Authentication
-              $tmpObject = new OrionDB_Authentication;
-              $authresult = $tmpObject->auth($recordObject);
-              if($authresult){
-                 // auth success
-                 logmessage("Login success: User:" . $recordObject->user_name);
-              } 
-              else {
-                // auth fail
-                logmessage("Login failed: User:" . $recordObject->user_name);
-              }
-            } 
-            else { */
-               //logmessage("Normal Post");
-               OrionDB_Create($requestedResource); // function will get the post data itself
- //           }
+             OrionDB_Create($requestedResource); // function will get the post data itself
     		   break;
     	   case 'PUT':
     	      //update existing record, so having either /id or a set of records
@@ -194,7 +167,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     die();  
                 }
                 $recordJSON = substr($putdata,strlen('records='));
-                //logmessage($recordJSON);
+                logmessage($recordJSON);
                 //print_r(json_decode($recordJSON));
                 $JSONObject = json_decode($recordJSON);
             }
@@ -208,13 +181,10 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                //logmessage("Auth server resource = " . $ORIONDBCFG_auth_server_resource_name);
                if(($ORIONDBCFG_auth_module_active) && ($requestedResource == $ORIONDBCFG_system_state_resource_name)){
                  // do the auth request
-                 // get the post
-                 //logmessage("Authentication server Post");
+                 //logmessage("Authentication server Put");
                  
-                 //$records_in_json = $_POST["records"];
-                 //$recordArray= json_decode($records_in_json);
-                 //$recordObject = $recordArray[0];
-                 $recordObject = $JSONObject;
+                 $recordObject = $JSONObject[0];
+                 //print_r($recordObject);
                  // feed the object to the Authentication
                  $tmpObject = new OrionDB_Authentication;
                  $authresult = $tmpObject->auth($recordObject);

@@ -14,7 +14,31 @@ class OrionDB_SystemState{
   public $login_status;
   public $preferred_client;
   public $type = "SystemState";
-  
+  public $logout = false;
+}
+
+
+function OrionDB_Session_set_information(OrionDB_SystemState $state_info){
+   // hardcoding session names
+   
+   $_SESSION['system_state_id'] = $state_info->id;
+   $_SESSION['system_state_user_name'] = $state_info->user_name;
+   $_SESSION['system_state_login_status'] = $state_info->login_status;      
+   $_SESSION['system_state_preferred_client'] = $state_info->preferred_client;
+   //echo "info after setting info <br>\n";
+   //print_r($_SESSION);
+}
+
+function OrionDB_Session_get_information(){
+  // returns an object of type OrionDB_SystemState
+  //echo "info before getting info <br>\n";
+  //print_r($_SESSION);
+  $tmpObject = new OrionDB_SystemState;
+  $tmpObject->id = $_SESSION['system_state_id'];
+  $tmpObject->user_name = $_SESSION['system_state_user_name'];
+  $tmpObject->login_status = $_SESSION['system_state_login_status'];
+  $tmpObject->preferred_client = $_SESSION['system_state_preferred_client'];
+  return $tmpObject;
 }
 
 function OrionDB_Check_cookie(){
@@ -29,7 +53,7 @@ function OrionDB_Check_cookie(){
        $OrionDBSession_found = false;
        foreach($sessions as $key => $value){
          $sesname = substr($value,0,strlen($ORIONDBCFG_session_name));
-         logmessage("checking session name in cookie: " . $sesname . " to configured: " . $ORIONDBCFG_session_name);
+         //logmessage("checking session name in cookie: " . $sesname . " to configured: " . $ORIONDBCFG_session_name);
          if($sesname == $ORIONDBCFG_session_name){
            $OrionDBSession_found = true; 
          }
@@ -49,6 +73,7 @@ function OrionDB_Check_cookie(){
     return false;
   }
 }
+
 
 
 function OrionDB_Session_start($validuser = false){
@@ -80,7 +105,6 @@ function OrionDB_Session_start($validuser = false){
     //print_r($_SERVER);
     // prepare the session to start
     //void session_set_cookie_params (int $lifetime [, string $path [, string $domain [, bool $secure [, bool $httponly ]]]] )
-    session_set_cookie_params($expire_time,$ORIONDBCFG_baseURI,$hostname,$ORIONDBCFG_cookie_only_secure);
     if($ORIONDBCFG_auth_module_active && $ORIONDBCFG_auth_module_only_valid_user_session){
       if(!$validuser){
          // check whether a session key of OrionDB already is present
@@ -90,18 +114,20 @@ function OrionDB_Session_start($validuser = false){
       }
     } 
     
-    // the stuff below does not work as multiple cookies can be sent.
     
     //start the session
     if(!(OrionDB_Check_cookie())){
-         session_name($session_name);
+      // only set this stuff if no cookie has been found
+       session_set_cookie_params($expire_time,$ORIONDBCFG_baseURI,$hostname,$ORIONDBCFG_cookie_only_secure);
+       session_name($session_name);
     }
-
-    session_start();
     
+    session_start();
     return true;
  
 }
+
+
 
 
 
