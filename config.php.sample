@@ -70,11 +70,13 @@
   	//$ORIONDBCFG_auth_server[2] = array(); 
 
    // the actual settings per server
+	$ORIONDBCFG_auth_server[0]["id"] = 0; // id for SC   
 	$ORIONDBCFG_auth_server[0]["name"] = "name"; // name to show on screen (send back to SC)
    $ORIONDBCFG_auth_server[0]["type"] = "LDAP"; // authentication type
 	$ORIONDBCFG_auth_server[0]["host"] = "subdomain.domain.ext"; // hostname to authenticate against (non-ORIONDB auth only)
 	$ORIONDBCFG_auth_server[0]["active"] = false; // should this authentication server be visible?
 
+	$ORIONDBCFG_auth_server[1]["id"] = 1; // id for SC
 	$ORIONDBCFG_auth_server[1]["name"] = "name"; // name to show on the screen (send back to SC)
 	$ORIONDBCFG_auth_server[1]["type"] = "ORIONDB"; // An authentication type which allows authentication against the database	
    $ORIONDBCFG_auth_server[1]["usertable"] = "users"; // the table where user information can be found
