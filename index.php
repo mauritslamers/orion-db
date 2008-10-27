@@ -157,7 +157,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
             //logmessage("read input stream: $putdata");
             // check whether we have proper JSON data
             $JSONObject = json_decode($putdata);
-            if($JSONObject == null){
+            if(!is_object($JSONObject)){
                 //logmessage("Now creating proper JSONData");
                 //now create proper JSON data
                 $putdata = urldecode($putdata);
