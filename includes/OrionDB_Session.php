@@ -109,6 +109,7 @@ function OrionDB_Session_start($validuser = false){
       if(!$validuser){
          // check whether a session key of OrionDB already is present
          if(!(OrionDB_Check_cookie())){
+            // if it does not exist, don't start the session
             return false;
          }
       }
@@ -116,14 +117,22 @@ function OrionDB_Session_start($validuser = false){
     
     
     //start the session
+    session_name($session_name);    
     session_set_cookie_params($expire_time,$ORIONDBCFG_baseURI,$hostname,$ORIONDBCFG_cookie_only_secure);
-    session_name($session_name);
+    // as this previous line only sets the first time when a session is created, let's add Brian Moons temporary solution
+     // but only after the session is started
     session_start();
+    
+    $test = setcookie($session_name,session_id(),(time()+$expire_time),$ORIONDBCFG_baseURI,$hostname,$ORIONDBCFG_cookie_only_secure,false);
+    logmessage("Result from setcookie: " . $test);
+    //logmessage("session id is:" . session_id());
     return true;
  
 }
 
 
+/*    setcookie($session_name,session_id(),$expire_time,$ORIONDBCFG_baseURI,$hostname,$ORIONDBCFG_cookie_only_secure,ini_get("session.cookie_httponly"));
+*/
 
 
 

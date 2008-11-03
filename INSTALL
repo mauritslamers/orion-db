@@ -6,8 +6,12 @@ Requirements:
 - PHP version 5.2 or later
 - MySQL version 5 or later
 
-- copy the config.php.sample file to config.php and set all the values.
-- copy the htaccess.sample file to .htaccess and set the rewrite rule according to the example
-- if you want to use the log file, make sure it exists and set up the permissions to allow the apache user to write to it
-- Happy DB-ing!
+- copy the config.php.sample file to config.php and set all the values. Read 
+  the comments for more information or go to the wiki.
+- copy the htaccess.sample file to .htaccess and set the rewrite rule according 
+  to the example
+- if you want to use the log file, make sure it exists and set up the 
+  permissions to allow the user running the webserver to write to it 
+  (chmod 777 filename.log will always work :-) )
+- Happy DB-ing and SC-ing!
 
