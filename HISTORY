@@ -1,0 +1,12 @@
+HISTORY
+
+January 2009
+The dependency on the MySQL database engine has been removed.
+OrionDB is able to support different database types by using database plugins.
+The original MySQL support has been moved to the plugin and OrionDB has become
+more or less database agnostic, as long as standard SQL is supported by the 
+database engine.
+For updating instructions please read the INSTALL file.
+
+October 2008
+OrionDB with only MySQL Support

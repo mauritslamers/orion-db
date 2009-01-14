@@ -197,50 +197,32 @@ class OrionDB_Object {
 		// function to update an existing record in the database
 		// the id property needs to be present in the $data object
     global $ORIONDB_DB;
-
+    
 		// do nothing if an id property doesn't exist on $data
     if(property_exists($data,'id'){
       $filtereddata = $this->filterfieldnames($data,true);
 		  $ORIONDB_DB->updaterecord($this->_tablename, $data);
+		  $this->init($data->id);
     }
     else {
       logmessage("No id given for update!");
       return false;
     }
-		
-		
-				// re-init object so it will return the correct data
-				$this->init($currentid); 
-			}
-		}
-		else {
-
-		}
 	}
 	
 	function delete($data = NULL){
 		// function to delete the record indicated by $data or the current record if data happens to be null.
 		// If the object is not initialised, do nothing
-		$query = "";
+		global $ORIONDB_DB;
+		
 		if(is_null($data)){
-			if($this->_initialised){
-				// get id
-				$currentid = $this->id;
-				$query = "DELETE FROM " . $this->_tablename . " WHERE id = " . $currentid;	
-			}
+			if($this->_initialised) $currentid = $this->id;
 		} else {
 			// get id
-			if(isset($data->id)){
 				// $data->id must have a value, therefore isset instead of property_exists
-				$currentid = $data->id;
-				$query = "DELETE FROM " . $this->_tablename . " WHERE id = " . $currentid;	
-			}
+			if(isset($data->id)) $currentid = $data->id;
 		}
-		if($query){
-			$errormessage = "Error deleting the record with id " . $currentid . " in the table " . $this->_tablename;
-			logmessage("DELETE action in object " . $this->_tablename . " with query: " . $query);
-			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
-		}
+	  if($currentid) $ORIONDB_DB->deleterecord($this->_tablename,$currentid);
 	}	
 }
 

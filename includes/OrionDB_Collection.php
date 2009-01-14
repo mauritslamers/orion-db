@@ -20,23 +20,18 @@ class OrionDB_Collection {
 	  // we want to be able to call this function without parameters, so we cannot 
 	  // check at the entrance. So, let's make a check here: if $info is not of the correct type, 
 	  // make an empty collection object
+	  global $ORIONDB_DB;
+	  
 	  if($info instanceof OrionDB_QueryInfo){
     	  
-    		// first find out whether the table name exists.
-    		// This can be done by initialising one object as the autoload function creating the intended class 
-    		// errors out (does not create the class) when a false table is encountered
-    		
+    		// first find out whether the table name exists. We can find out by asking the DB plugin
     		// get basic information from the object
     		$tableNameExists = property_exists($info,'tablename');
     		$conditionsFieldExists = property_exists($info,'conditions');
-    		
-    		if($tableNameExists) {
-       		$tablename = cleansql($info->tablename);        
-        		// maybe a check whether $tablename contains php code, which seems unlikely as it would violate the URL
-        		$tmpobject = eval("return new " . $tablename . "_class;");
-        		// if the class does not exist, PHP dies here.
-        		//print_r($tmpobject);
-        		
+    		$tablename = $info->tablename;
+    		$table_exists = $ORIONDB_DB->table_exists($tablename);
+    	  
+    		if($tableNameExists && $table_exists) {
         		if(($tmpobject) && (is_object($tmpobject)) && ($tmpobject instanceof OrionDB_Object)){
         			// even when $info->fieldnamelist is set, override it to only get all ids for this table
         			$info->fieldnamelist = "id";
@@ -44,13 +39,12 @@ class OrionDB_Collection {
         			$tmpQueryObject = new OrionDB_Query;
         			$query = $tmpQueryObject->createSelectQuery($info);
         			//echo $query;
- 
-        			$errormessage = "Error while retrieving a collection from table " . $tablename;
-        			$result = mysql_query($query) or fataldberror($query, $errormessage . ": " . mysql_error());
-        			$numrows = mysql_num_rows($result);
+        			
+        			$queryresult = $ORIONDB_DB->runquery($query);
+        			$numrows = count($queryresult);
         			if($numrows>0){
         				for($index=0;$index<$numrows;$index++){
-        					$currentrecord = mysql_fetch_array($result);
+        					$currentrecord = $queryresult[$index];
         					$currentid = $currentrecord['id'];
         					$newobject = eval("return new " . $tablename . "_class;");
         					$newobject->init($currentid);

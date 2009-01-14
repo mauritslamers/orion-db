@@ -40,6 +40,8 @@ class OrionDB_DB_MySQL {
    // find the name of the table in the array. 
    // MySQL table names are case sensitive, which differs from other databases like PostgreSQL, so
    // do the comparison in lowercase
+   if($tablename == "") return false;
+   
    $tbname = strtolower($tablename);
    $numitems = count($this->tablenames);
    if(($numitems>0) && $tbname){
@@ -58,6 +60,7 @@ class OrionDB_DB_MySQL {
   private function filterfieldtype($typedef){
     // Function to return the fieldtype name and constraint
     // the result is returned in an array [('type','varchar'),('size','20')]
+    if(!$typedef) return false;
     
 	  // getting varchar(20) to varchar as fieldtypename and 20 as fieldtypelimit
 		$parenthesis_open_pos = strpos($typedef,'(');
@@ -80,6 +83,8 @@ class OrionDB_DB_MySQL {
   function tablecolumns($tablename){
     // Return an array with fieldnames and types
     // clean first 
+    if($tablename == "") return false;
+    
     $tablename = $this->cleansql($tablename);
 		
 		$query = "SHOW COLUMNS from " . $tablename;
@@ -116,6 +121,7 @@ class OrionDB_DB_MySQL {
   function getrecordbyid($tablename,$id){
      // get a record by the db id
      // return an associative array with the content of the record
+    if(($tablename == "") || (!$id)) return false;
      
  		$tmpid = $this->cleansql($id);
  		$tmptablename = $this->cleansql($tablename);
@@ -135,20 +141,23 @@ class OrionDB_DB_MySQL {
   function getrecordbyquery($tablename,$query){
     // get a record by query
     // return an associative array with the content of the record
+    if(($tablename == "") || ($query == "")) return false;
     
-      $errormessage="Error when retrieving a record by query from table " . $tablename;
-      $result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
-      $numrows = mysql_num_rows($result);
-      if($numrows == 1){
-         // init the current record with all data in the record (the filtered fields are in the result)
-         return mysql_fetch_array($result);
-      }
-      else return false;
+    $errormessage="Error when retrieving a record by query from table " . $tablename;
+    $result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
+    $numrows = mysql_num_rows($result);
+    if($numrows == 1){
+       // init the current record with all data in the record (the filtered fields are in the result)
+       return mysql_fetch_array($result);
+    }
+    else return false;
   }
   
   function createrecord($tablename,stdClass $data){
     // function to create a new record in the DB
     // returns the newly created record ID 
+    if($tablename == "") return false;
+    
     $tablename = $this->cleansql($tablename);
     $properties = array();
 		$values = array();
@@ -173,7 +182,10 @@ class OrionDB_DB_MySQL {
   
   function updaterecord($tablename, stdClass $data){
     // function to update an existing record
-
+    if($tablename == ""){
+      return false; 
+    }
+    
   	$currentid = $data->id;
 		$key_value_sets = array();
     foreach($data as $key=>$value){
@@ -181,7 +193,7 @@ class OrionDB_DB_MySQL {
        $key_value_sets[] = $this->cleansql($key) . '=' . $this->cleansql($valuetosave);
     }
     
-    $query = "UPDATE " . $this->_tablename . " set ";
+    $query = "UPDATE " . $tablename . " set ";
     if(count($key_value_sets)>0){
     	//logmessage("Updating " . $this->_tablename . " id " . $currentid . " with " . count($key_value_sets) . " fields");
       //logmessage("Assembling query for id " . $currentid);
@@ -190,10 +202,38 @@ class OrionDB_DB_MySQL {
       logmessage("UPDATE action in object " . $this->_tablename . " with query: " . $query);
 			$errormessage = "Error updating the existing record with id " . $currentid . " in the table " . $tablename;
 			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
+    }
   }
   
+  function deleterecord($tablename,$id){
+    if(($tablename == "") || (!$id)) return false;
+    
+    $tablename = $this->cleansql($tablename);
+    
+    $query = "DELETE FROM " . $tablename . " WHERE id = " . $id;	
+		$errormessage = "Error deleting the record with id " . $currentid . " in the table " . $tablename;
+		logmessage("DELETE action in object " . $tablename . " with query: " . $query);
+		mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
+  }
   
-  
+  function runquery($tablename,$query){
+    // Function to run a query, currently only used by OrionDB_Collection
+    // return an associative array with fieldnames and values
+    if(($tablename == "") || ($query == "")) return false;
+    
+    $errormessage = "Error while retrieving a collection from table " . $tablename;
+    $result = mysql_query($query) or fataldberror($query, $errormessage . ": " . mysql_error());
+    $numrows = mysql_num_rows($result);
+    if($numrows > 0){
+      $returnarray = array();
+      for($index=0;$index<$numrows;$index++){
+        $returnarray[] =  mysql_fetch_array($result);
+      }
+      return $returnarray;
+    } 
+    else return false;
+}
+
 } // end class OrionDB_DB_MySQL
 
 
