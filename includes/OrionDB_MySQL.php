@@ -127,12 +127,73 @@ class OrionDB_DB_MySQL {
 
     $numrows = mysql_num_rows($result);
     if($numrows == 1){
-       $row = mysql_fetch_array($result);
-       return($row);
+       return mysql_fetch_array($result);
     } 
     else return false;
   } // end function getrecordbyid
+  
+  function getrecordbyquery($tablename,$query){
+    // get a record by query
+    // return an associative array with the content of the record
     
+      $errormessage="Error when retrieving a record by query from table " . $tablename;
+      $result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
+      $numrows = mysql_num_rows($result);
+      if($numrows == 1){
+         // init the current record with all data in the record (the filtered fields are in the result)
+         return mysql_fetch_array($result);
+      }
+      else return false;
+  }
+  
+  function createrecord($tablename,stdClass $data){
+    // function to create a new record in the DB
+    // returns the newly created record ID 
+    $tablename = $this->cleansql($tablename);
+    $properties = array();
+		$values = array();
+		foreach($data as $key=>$value){
+		  $properties[] = $this->cleansql($key);
+      $resultvalue = $value ? $value: 'NULL'; // if $value evaluates false, have NULL for field value
+		  $values[] = $this->cleansql($resultvalue);
+		}
+	
+		if(count($properties)>0){
+			$propertiesquery = join(",",$properties);
+			$valuesquery = join(",",$values);
+			$query = "INSERT into " . $tablename;
+			$query .= $querystart . " (" . $propertiesquery . ") VALUES (" . $valuesquery . ")";
+			logmessage("CREATE action in object " . $tablename . " with query: " . $query);
+			$errormessage = "Error creating a new record in the table " . $tablename;
+			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
+			return mysql_insert_id();
+    }
+    return false;
+  } // end function createrecord
+  
+  function updaterecord($tablename, stdClass $data){
+    // function to update an existing record
+
+  	$currentid = $data->id;
+		$key_value_sets = array();
+    foreach($data as $key=>$value){
+       $valuetosave = $value ? $value : 'NULL';
+       $key_value_sets[] = $this->cleansql($key) . '=' . $this->cleansql($valuetosave);
+    }
+    
+    $query = "UPDATE " . $this->_tablename . " set ";
+    if(count($key_value_sets)>0){
+    	//logmessage("Updating " . $this->_tablename . " id " . $currentid . " with " . count($key_value_sets) . " fields");
+      //logmessage("Assembling query for id " . $currentid);
+			$keyvaluequery = join(",", $key_value_sets);
+			$query .= $keyvaluequery . " where id=" . $currentid;
+      logmessage("UPDATE action in object " . $this->_tablename . " with query: " . $query);
+			$errormessage = "Error updating the existing record with id " . $currentid . " in the table " . $tablename;
+			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
+  }
+  
+  
+  
 } // end class OrionDB_DB_MySQL
 
 

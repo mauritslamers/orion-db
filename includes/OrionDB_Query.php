@@ -39,6 +39,8 @@ private function addValueInListQuery($key,$value){
    /// \param[in] $key The key (fieldname)
    /// \param[in] $value The value(s) of the fieldname
    /// \return a part of the query or nothing
+   global $ORIONDB_DB;
+   
    if(($key != "") && ($value != "")){
        if($this->_queryUnchanged[$this->_numberOfRecursions]){
           $returnQuery = " WHERE ";
@@ -47,7 +49,7 @@ private function addValueInListQuery($key,$value){
        else {
           $returnQuery = " AND ";  
        }
-       $returnQuery .= cleansql($key) . " in (" . cleansql($value) . ")";
+       $returnQuery .= $ORIONDB_DB->cleansql($key) . " in (" . $ORIONDB_DB->cleansql($value) . ")";
        return $returnQuery;
    }
 }
@@ -59,6 +61,8 @@ private function addSingleKeyValueQuery($key,$value,$valueIsText = false){
   /// \param[in] $value The value
   /// \param[in] $valueIsText Set whether the content of $value is text 
   /// \return A part of the query or nothing
+   global $ORIONDB_DB;
+   
    if(($key != "") && ($value != "")){
        if($this->_queryUnchanged[$this->_numberOfRecursions]){
           $returnQuery = " WHERE ";
@@ -67,12 +71,12 @@ private function addSingleKeyValueQuery($key,$value,$valueIsText = false){
        else {
           $returnQuery = " AND ";  
        }
-       $returnQuery .= cleansql($key) . "=";
+       $returnQuery .= $ORIONDB_DB->cleansql($key) . "=";
        if($valueIsText){   
-          $returnQuery .= "'" . cleansql($value) . "' ";
+          $returnQuery .= "'" . $ORIONDB_DB->cleansql($value) . "' ";
        }
        else {
-          $returnQuery .= cleansql($value) . " ";         
+          $returnQuery .= $ORIONDB_DB->cleansql($value) . " ";         
        }
        return $returnQuery;
    }  
@@ -80,13 +84,16 @@ private function addSingleKeyValueQuery($key,$value,$valueIsText = false){
 
 
 function createSelectQuery(OrionDB_QueryInfo $info){
+   global $ORIONDB_DB;
+  
    $this->_numberOfRecursions++;
    //print_r($info);
    if($info->fieldnamelist == ""){
      $info->fieldnamelist = "*";  
    }
    if(($info->tablename) && ($info->fieldnamelist)){
-      $query = "select ". cleansql($info->fieldnamelist) . " from " . cleansql($info->tablename); // setup the start
+      $query = "select ". $ORIONDB_DB->cleansql($info->fieldnamelist) . " from " . $ORIONDB_DB->cleansql($info->tablename); 
+        // setup the start
       $this->_queryUnchanged[$this->_numberOfRecursions] = true; // set the unchanged query flag true
       // next check for a conditions object
       if(property_exists($info,'conditions')){ // we need an object of the current table to check fieldnames
@@ -147,7 +154,7 @@ function createSelectQuery(OrionDB_QueryInfo $info){
           if(array_key_exists('order',$info->conditions)){
             // add the order to the end of the query
             // check for field names?
-            $query .= " ORDER BY " . cleansql($info->conditions['order']);
+            $query .= " ORDER BY " . $ORIONDB_DB->cleansql($info->conditions['order']);
           }
       }
       // if ready, return the query

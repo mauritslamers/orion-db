@@ -138,100 +138,83 @@ class OrionDB_Object {
 	function init_by_query(OrionDB_QueryInfo $info){  
 	  /// Function to init an object by QueryInfo object. Used by the ORIONDB authentication module
 	  /// to get the passwords etc. So, it does not filter out the filtered fields set in the config
-	   
-	  	$tmpQueryObject = new OrionDB_Query;
-	  	//print_r($info);
+	  global $ORIONDB_DB; 
+	  $tmpQueryObject = new OrionDB_Query;
    	$query = $tmpQueryObject->createSelectQuery($info);
-      //logmessage($query);
-      $errormessage="Error when retrieving a record by query from table " . $this->_tablename;
-      $result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
-      $numrows = mysql_num_rows($result);
-      if($numrows == 1){
-         // init the current record with all data in the record (the filtered fields are in the result)
-         $currentrecord = mysql_fetch_array($result);
-         //print_r($currentrecord);
-         $numfields = mysql_num_fields($result);
-         for($index=0;$index<$numfields;$index++){
-            $currentfieldname = mysql_field_name($result,$index);
-            $currentfieldvalue = $currentrecord[$index];
-            $codetoeval = "\$this->$currentfieldname = '$currentfieldvalue';";
-            eval($codetoeval);
-         }
-         //print_r($this);
+    $tmprecord = $ORIONDB_DB->getrecordbyquery($this->_tablename,$query);
+    
+    if($tmprecord){
+      foreach($tmprecord as $key=>$value){
+        if(is_string($key)){ 
+              // for some strange reason foreach runs every item twice, first with string association and 
+              // second with the index number itself. Only the association is of any interest here.
+          $codetoeval="\$this->$key = '$value';"; 
+          logmessage($codetoeval);
+          eval($codetoeval);
+        }
       }
-	}
+      return true; 
+    }
+    else return false;
+    
+	} // end init_by_query
+
+  private function filterfieldnames(stdClass $data, $filter_id = false){
+    $resultdata = new stdClass;
+    
+    if($filter_id){
+      // filter out the 'id' field
+      $fieldnames_to_allow = array();
+      foreach($this->_fieldnames as $value){
+         if($value != 'id'){
+           $fieldnames_to_allow[] = $value;
+         }
+      }
+    } 
+    else $fieldnames_to_allow = $this->_fieldnames;
+    
+    foreach($data as $key=>$value){
+      if(array_key_exists($key, $fieldnames_to_allow)){
+         $codetoeval = "\$resultdata->$key = '$value';";
+         eval($codetoeval);
+      }
+    } 
+    return $resultdata;
+  }
 		
 	function create(stdClass $data){
 		// Function to create a new record in the database.
 		// $data is a PHP object
-		$querystart = "INSERT into " . $this->_tablename;
-		$properties = array();
-		$values = array();
-		for($index=0;$index<count($this->_fieldnames);$index++){
-			$currentfieldname = $this->_fieldnames[$index];
-			if(property_exists($data,$currentfieldname)){
-				$properties[] = $currentfieldname;
-				$currentvalue = eval("return \$data->$currentfieldname;");
-				if(!$currentvalue) $currentvalue = 'NULL'; // if nothing is in the $currentvalue, put in NULL
-				$values[] = mysql_real_escape_string($currentvalue);
-			}	
-		}
-		if(count($properties)>0){
-			$propertiesquery = join(",",$properties);
-			$valuesquery = join(",",$values);
-			$query = $querystart . " (" . $propertiesquery . ") VALUES (" . $valuesquery . ")";
-			logmessage("CREATE action in object " . $this->_tablename . " with query: " . $query);
-			$errormessage = "Error creating a new record in the table " . $this->_tablename;
-			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
-			$lastid = mysql_insert_id();
-			$this->init($lastid);
-		}
+    global $ORIONDB_DB;
+    
+    // run through the data to filter out any fields not in $this->_fieldnames
+    $filtereddata = $this->filterfieldnames($data);
+		$newid = $ORIONDB_DB->createrecord($this->_tablename,$resultdata);
+		if($newid) $this->init($lastid);
 	}
 		
 	function update(stdClass $data){
 		// function to update an existing record in the database
 		// the id property needs to be present in the $data object
-		//print_r($data);
-		//die();
-		$querystart = "UPDATE " . $this->_tablename . " set ";
-		$key_value_sets = array();
-		if(property_exists($data, 'id')){
-			//$data->id MUST have value
-			$currentid = $data->id;
-			logmessage("Updating " . $this->_tablename . " id " . $currentid . " with " . count($this->_fieldnames) . " fields");
-			for($index=0;$index<count($this->_fieldnames);$index++){
-				$currentfieldname = $this->_fieldnames[$index];
-				if(property_exists($data,$currentfieldname) && ($currentfieldname != 'id')){ // prevent overwriting of id
-					$currentvalue = eval("return \$data->$currentfieldname;");
-					//logmessage("Fieldname: " . $currentfieldname . ": " . $currentvalue);
-					if(is_null($currentvalue)){ // checking null
-   					$currentvalue = 'NULL';
-					}
-					else {
-					  if($this->fieldIsText($currentfieldname)){ 
-					     $currentvalue = "'" . mysql_real_escape_string($currentvalue) . "'";
-					  } 
-					  else {
-					     $currentvalue = mysql_real_escape_string($currentvalue);
-					  }  
-					}
-					// no mysql protection because that has already been taken care of
-					$key_value_sets[] = $currentfieldname . "=" . $currentvalue; 
-				}	
-			}	
-			if(count($key_value_sets)>0){
-			   logmessage("Assembling query for id" . $currentid);
-				$keyvaluequery = join(",", $key_value_sets);
-				$query = $querystart . $keyvaluequery . " where id=" . $currentid;
-            logmessage("UPDATE action in object " . $this->_tablename . " with query: " . $query);
-				$errormessage = "Error updating the existing record with id " . $currentid . " in the table " . $this->_tablename;
-				mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
+    global $ORIONDB_DB;
+
+		// do nothing if an id property doesn't exist on $data
+    if(property_exists($data,'id'){
+      $filtereddata = $this->filterfieldnames($data,true);
+		  $ORIONDB_DB->updaterecord($this->_tablename, $data);
+    }
+    else {
+      logmessage("No id given for update!");
+      return false;
+    }
+		
+		
 				// re-init object so it will return the correct data
 				$this->init($currentid); 
 			}
 		}
 		else {
-		  logmessage("No id given for update!");
+
 		}
 	}
 	
