@@ -7,9 +7,13 @@
  *
  */ 
 
-require_once("dbconnect.php"); // dbconnect.php will automatically require_once config.php
+//require_once("dbconnect.php"); // dbconnect.php will automatically require_once config.php
+require_once('includes/OrionDB_initialise.php'); // preconfig initialisation
+require_once("config.php"); // load the config 
+require_once("includes/OrionDB_postconfig.php"); // initialise database connection and localisation
 require_once("includes/securitylib.php");
 require_once("includes/commonfunctions.php"); // library containing common functions like error logging
+
 require_once("includes/OrionDB.php"); // load the framework
 
 

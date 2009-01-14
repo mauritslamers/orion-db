@@ -19,34 +19,19 @@ function __autoload($classname){
 	$tablename = substr($classname,0,$lastunderscorepos);
 	//logmessage("Searching for table " . $tablename);
 	
-	// check whether table actually exists in a way that prevents SQL injection
-	$query = "SHOW tables";
-	$result = mysql_query($query) or fataldberror("Error checking table existance in database: " . mysql_error());
-	$numrows = mysql_num_rows($result);
-	$tablefound = false;
-	// get the db name
-	global $ORIONDBCFG_MySQL_dbname;
-	// compare the class name against the table names in the DB and set $tablefound to true if a match is found
-	if($numrows>0){
-		for($index=0;$index<$numrows;$index++){
-			$currentrecord = mysql_fetch_array($result);
-			$fieldname = "Tables_in_" . $ORIONDBCFG_MySQL_dbname;
-			$currenttablename = $currentrecord[$fieldname];
-			//logmessage("Comparing " . $currenttablename . " to " . $tablename);
-			if($currenttablename == $tablename){
-			   //logmessage("Table match found");
-				$tablefound = true;	
-			}
-		}	
-		if($tablefound){
-			//match found, create new class
-			$codetoeval = "class " . $classname . " extends OrionDB_Object {";
+	// first check whether a table exists with the name of the class
+	global $ORIONDB_DB;
+	$table_exists = $ORIONDB_DB->table_exists($tablename);
+	if($table_exists){
+	  // setup the class
+	  	$codetoeval = "class " . $classname . " extends OrionDB_Object {";
 			$codetoeval .= "function __construct(){ parent::__construct('" . $tablename . "'); } }";
 			eval($codetoeval);
 			//logmessage("Generated class " . $classname);
-		} else {
-			// check for external PHP files to include
-			// before requiring the file, check whether it exists
+	 }
+   else {
+ 			// check for external PHP files to include
+			// before requiring the file, check whether it exists	
 			$filename = "includes/" . $classname . ".php";
 			if(file_exists($filename)){
 				require_once $filename;
@@ -56,9 +41,10 @@ function __autoload($classname){
 			   logmessage('Autoload did not succeed in finding a decent source to create a class with. Classname:' . $classname);
 				//return false;// do nothing for else, unless this breaks things	
 			}
-		}
-	}
-}
+   }
+} // end autoload
+
+	
 
 
 

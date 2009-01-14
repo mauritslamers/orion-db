@@ -25,71 +25,48 @@ class OrionDB_Object {
 			It also creates the $this->[fieldname] properties and the $this->_tablename property
 		*/		
 		// first retrieve the field names of the table
-		$tablename = cleansql($tablename);
+		global $ORIONDB_DB;
+    global $ORIONDBCFG_filter_field_names;
 		
-		$query = "SHOW COLUMNS from " . $tablename;
-		$result = mysql_query($query) or fataldberror("Error setting up the class of table " . $tablename . ": " . mysql_error(), $query);
 		$this->_tablename = $tablename;
 		$this->type = $tablename;
 
-      // get the field names that should not end up in the object according to the configuration
-      global $ORIONDBCFG_filter_field_names;
-      $filterfields = array();
-      if(array_key_exists($tablename,$ORIONDBCFG_filter_field_names)){
-         foreach($ORIONDBCFG_filter_field_names[$tablename] as $key=>$value){
-            if($value){
-               $filterfields[] = $value;  
-               //logmessage("Added field " . $value . " to exclusion list");
-            }
-         }
+    // get all the fieldnames
+    $allfields = $ORIONDB_DB->tablecolumns($tablename);
+    $filteredfields = array();
+    // filter the fieldnames to remove the field names that should not end up in the object according to the configuration
+    if(array_key_exists($tablename,$ORIONDBCFG_filter_field_names)){
+      // if the filter does not exist, don't filter
+      foreach($allfields as $field){
+        $passfieldname = true;
+        foreach($ORIONDBCFG_filter_field_names[$tablename] as $key=>$value){
+          if($value){
+            if($value == $field['fieldname']) $passfieldname = false; 
+          } 
+        } 
+        if($passfieldname) array_push($filteredfields, $field);
+      }      
+    } else {
+      // if no filtering needs to be done, pass on all fields as filtered
+      $filteredfields = $allfields;
+    }
+    
+    // walk through all fields and set up the object
+    if(count($filteredfields)>0){
+      foreach($filteredfields as $field){
+        $fieldname=$field['fieldname'];
+        $this->_fieldtypes[$fieldname] = $field['type'];
+        $this->_fieldlimits[$fieldname] = $field['size'];
+        $this->_fieldnames[] = $fieldname;
+	      $codetoeval = "\$this->$fieldname = '';";
+	      eval($codetoeval);
       }
-
-		$numberofrecords = mysql_num_rows($result);
-		for($index=0;$index<$numberofrecords;$index++){
-			$currentrecord = mysql_fetch_array($result);
-			$fieldname = $currentrecord['Field'];
-			
-			// getting varchar(20) to varchar as fieldtypename and 20 as fieldtypelimit
-			$fieldtypedef = $currentrecord['Type'];
-			$parenthesis_open_pos = strpos($fieldtypedef,'(');
-			if($parenthesis_open_pos){ // ( found, find ) and take name and length
-   			$parenthesis_close_pos = strpos($fieldtypedef,')');
-   			$fieldtypename = substr($fieldtypedef,0,$parenthesis_open_pos);
-   			$fieldtypelimit = substr($fieldtypedef,($parenthesis_open_pos+1),($parenthesis_close_pos - $parenthesis_open_pos - 1));
-			} 
-			else { // no ( found, so just take the entire name
-			   $fieldtypename = $fieldtypedef;
-			   $fieldtypelimit = 0;
-			}
-			$this->_fieldtypes[$fieldname] = $fieldtypename;
-			$this->_fieldlimits[$fieldname] = $fieldtypelimit;
-			$this->_completefieldtypes[$fieldname] = $fieldtypedef;
-			//echo "fieldtypename: $fieldtypename, fieldtypelimit: $fieldtypelimit <br>";
-			// before creating the property and add the fieldname to the $this->_fieldnames array
-			// check whether the field is in the filterfields array
-			if(count($filterfields) > 0){
-			   // there is something to filter
-			   if(!(in_array($fieldname,$filterfields,true))){
-			      // if the current field is not in the fieldnames list, set the property
-			      // by not including it in the $this->_fieldnames list, the normal functions will not return the field
-               // except the init_by_query function
-			      $codetoeval = "\$this->$fieldname = '';";
-			      $this->_fieldnames[] = $fieldname;
-			      eval($codetoeval);
-			   } 
-			}
-			else {
-			   // no fieldnames to filter? create the fields!
-			   $codetoeval = "\$this->$fieldname = '';";
-			   $this->_fieldnames[] = $fieldname;
-			   eval($codetoeval);
-			}
-		}
+    }
 	}	
 
-      // As the field types and limits are private to prevent exposure to JSON,
-      // we still want to be able to tell what the field types and limits are to other PHP functions.
-      // These functions provide this data.
+   // As the field types and limits are private to prevent exposure to JSON,
+   // we still want to be able to tell what the field types and limits are to other PHP functions.
+   // These functions provide this data.
 
    function getFieldType($fieldname){
       /// This function returns the field type of the given fieldname or returns false if the fieldname does not exist
@@ -139,28 +116,19 @@ class OrionDB_Object {
 
   
 	function init($id){
-		$tmpid = cleansql($id);
-		$query = "select * from " . $this->_tablename . " where id = " . $tmpid;
-		//logmessage("INIT of object " . $this->_tablename . " with query: " . $query);
-
-		$errormessage = "Error when retrieving a record from table " . $this->_tablename . " with id " . $tmpid;
-		$result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
-		
-		// only accept one record
-		$numofrecords = mysql_num_rows($result);
-		if($numofrecords == 1){
-			$currentrecord = mysql_fetch_array($result);
-			for($index=0;$index<count($this->_fieldnames);$index++){
-				$currentfieldname = $this->_fieldnames[$index];
-				$codetoeval = "\$this->$currentfieldname = htmlentities(\$currentrecord['$currentfieldname']);";
-				eval($codetoeval);
-			}
-			$this->_initialised = true;
-			// setup the refresh, update and destroy URL's for this record
-			global $ORIONDBCFG_baseURI;
-	      $this->refreshURL = $ORIONDBCFG_baseURI . "/" . $this->_tablename . "/" . $id;
-	      $this->updateURL = $ORIONDBCFG_baseURI. "/" . $this->_tablename . "/" . $id;
-	      $this->destroyURL = $ORIONDBCFG_baseURI . "/" . $this->_tablename . "/" . $id;	      
+	  global $ORIONDB_DB;
+	  
+	  $record = $ORIONDB_DB->getrecordbyid($this->_tablename,$id);
+	  if($record){
+   	  foreach($this->_fieldnames as $currentfieldname){
+   				$codetoeval = "\$this->$currentfieldname = htmlentities(\$record['$currentfieldname']);";
+   				eval($codetoeval);
+   		}
+   		$this->_initialised = true;
+   			// setup the refresh, update and destroy URL's for this record
+   		global $ORIONDBCFG_baseURI;
+   		$uri = $ORIONDBCFG_baseURI . "/" . $this->_tablename . "/" . $id;
+	    $this->refreshURL = $this->updateURL = $this->destroyURL = $uri;     
 			return true;
 		} else {
 			return false;
