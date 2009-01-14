@@ -7,18 +7,15 @@
  * 
  */
  
- // === Setting up some variables | Do NOT comment, remove or change! === //
- 
- 	$ORIONDBCFG_auth_server = array();
- 	$ORIONDBCFG_filter_field_names = array();
 
  //=== Database settings === //
  
-   $ORIONDBCFG_MySQL_host = "localhost";
-   $ORIONDBCFG_MySQL_user = "db_user";
-   $ORIONDBCFG_MySQL_password = "db_passwd";
+  $ORIONDBCFG_DB_type = "mysql"; // For now choose between 'mysql' and 'postgresql' 
+  $ORIONDBCFG_DB_host = "localhost";
+  $ORIONDBCFG_DB_user = "db_user";
+  $ORIONDBCFG_DB_password = "db_passwd";
+  $ORIONDBCFG_DB_dbname = "dbname";
    
-   $ORIONDBCFG_MySQL_dbname = "dbname";
 	$ORIONDBCFG_baseURI = "/path/to"; // no trailing slash please :)
 
 // === Locale settings === //
@@ -97,17 +94,5 @@
                                                 // client is used with access to different client
 
 
-// === End of user settings === //
 
-	
-	// functionality that absolutely needs to be executed 
-	// creating a valid log file name with path
-	$lastposofslash = strrchr($ORIONDBCFG_logfilepath,"/");
-	if($lastposofslash != strlen($ORIONDBCFG_logfilepath)){
-		$ORIONDBCFG_logfile = $ORIONDBCFG_logfilepath . "/" . $ORIONDBCFG_logfilename;	
-	} else {
-		$ORIONDBCFG_logfile = $ORIONDBCFG_logfilepath . $ORIONDBCFG_logfilename;	
-	}
-		
-	setlocale (LC_ALL, $ORIONDBCFG_locale);
 ?>
