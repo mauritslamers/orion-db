@@ -55,4 +55,17 @@ class OrionDB_DB_PostgreSQL {
 		return $str;
 	}
 
+function tablecolumns($tablename){
+  $query = "SELECT a.attname, t.typname as type, a.attlen, a.atttypmod, a.attnotnull, ";
+  $query .= "a.atthasdef, -1 AS attstattarget, a.attstorage,";
+  $query .= "(SELECT adsrc FROM pg_attrdef adef WHERE a.attrelid=adef.adrelid AND a.attnum=adef.adnum) AS adsrc, ";
+  $query .= "a.attstorage AS typstorage, false AS attisserial ";
+  $query .= "FROM pg_attribute a, pg_class c, pg_type t ";
+  $query .= " WHERE c.relname = '" . $tablename ;
+  $query .= "' AND a.attnum > 0 AND a.attrelid = c.oid AND a.atttypid = t.oid ORDER BY a.attnum";
+  
+  // tablename in attname
+  // type in type
+   
+}
 ?>

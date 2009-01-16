@@ -6,7 +6,7 @@ class OrionDB_Collection {
 	public $records = array();
 	public $ids = array();
 	
-	function __construct($info = null){
+  function __construct($info = null){
 	  /// function to construct the collection object
 	  /// \param[in] $info An object containing at least the property tablename
 	  
@@ -22,46 +22,45 @@ class OrionDB_Collection {
 	  // make an empty collection object
 	  global $ORIONDB_DB;
 	  
-	  if($info instanceof OrionDB_QueryInfo){
+    if($info instanceof OrionDB_QueryInfo){
     	  
-    		// first find out whether the table name exists. We can find out by asking the DB plugin
-    		// get basic information from the object
-    		$tableNameExists = property_exists($info,'tablename');
-    		$conditionsFieldExists = property_exists($info,'conditions');
-    		$tablename = $info->tablename;
-    		$table_exists = $ORIONDB_DB->table_exists($tablename);
-    	  
-    		if($tableNameExists && $table_exists) {
-        		if(($tmpobject) && (is_object($tmpobject)) && ($tmpobject instanceof OrionDB_Object)){
-        			// even when $info->fieldnamelist is set, override it to only get all ids for this table
-        			$info->fieldnamelist = "id";
-        			//print_r($info);
-        			$tmpQueryObject = new OrionDB_Query;
-        			$query = $tmpQueryObject->createSelectQuery($info);
-        			//echo $query;
-        			
-        			$queryresult = $ORIONDB_DB->runquery($query);
-        			$numrows = count($queryresult);
-        			if($numrows>0){
-        				for($index=0;$index<$numrows;$index++){
-        					$currentrecord = $queryresult[$index];
-        					$currentid = $currentrecord['id'];
-        					$newobject = eval("return new " . $tablename . "_class;");
-        					$newobject->init($currentid);
-        					$this->records[] = $newobject; // add the new object to the record array
-        					$this->ids[] = $currentid; // idem for the id
-        				}	
-        			}
-        		}
-       		else {
-        		  // this part is executed when the loaded class is not an instance of OrionDB_Object
-        		  // remove the properties to show an empty object
-        		  unset($this->records);
-        		  unset($this->ids);
-        		} 
-    		}
-    	} // no else clause here, just create an empty collection object.
-	}	
-}
+   		// first find out whether the table name exists. We can find out by asking the DB plugin
+   		// get basic information from the object
+   		$tableNameExists = property_exists($info,'tablename');
+   		$conditionsFieldExists = property_exists($info,'conditions');
+   		$tablename = $info->tablename;
+   		$table_exists = $ORIONDB_DB->table_exists($tablename);
+   	  
+   		if($tableNameExists && $table_exists) {
+   			// even when $info->fieldnamelist is set, override it to only get all ids for this table
+   			$info->fieldnamelist = "id";
+   			//print_r($info);
+   			$tmpQueryObject = new OrionDB_Query;
+   			$query = $tmpQueryObject->createSelectQuery($info);
+   			//echo $query;
+   			
+   			$queryresult = $ORIONDB_DB->runquery($tablename, $query);
+   			$numrows = count($queryresult);
+   			if($numrows>0){
+   				for($index=0;$index<$numrows;$index++){
+   					$currentrecord = $queryresult[$index];
+   					$currentid = $currentrecord['id'];
+   					$newobject = eval("return new " . $tablename . "_class;");
+   					$newobject->init($currentid);
+   					$this->records[] = $newobject; // add the new object to the record array
+   					$this->ids[] = $currentid; // idem for the id
+   				}	
+   			}
+   		}
+   		else {
+   		  // this part is executed when the loaded class is not an instance of OrionDB_Object
+   		  // remove the properties to show an empty object
+   		  unset($this->records);
+   		  unset($this->ids);
+   		}   
+   	} // end if $info instanceof 
+  } // end constructor
+} // end class	
+
 
 ?>
