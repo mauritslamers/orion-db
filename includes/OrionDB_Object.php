@@ -189,7 +189,7 @@ class OrionDB_Object {
     
     // run through the data to filter out any fields not in $this->_fieldnames
     $filtereddata = $this->filterfieldnames($data);
-		$newid = $ORIONDB_DB->createrecord($this->_tablename,$resultdata);
+		$newid = $ORIONDB_DB->createrecord($this->_tablename,$filtereddata);
 		if($newid) $this->init($lastid);
 	}
 		

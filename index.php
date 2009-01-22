@@ -126,7 +126,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                       // and also checks whether the user is authorised to load this data
                       // it returns false when it has handled the stuff itself, or when the user is not allowed to have the stuff
                       $tmpAuthObject = new OrionDB_Authentication;
-                      $authResult = $tmpAuthObject->process_get_request($tablename);
+                      $authResult = $tmpAuthObject->process_get_request($requestedResource);
                       if(!$authResult){
                         // not allowed to get anything or it has handled the request itself
                         // so terminate

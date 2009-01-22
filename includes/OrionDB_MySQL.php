@@ -126,7 +126,7 @@ class OrionDB_DB_MySQL {
  		$tmpid = $this->cleansql($id);
  		$tmptablename = $this->cleansql($tablename);
 		$query = "select * from " . $tmptablename . " where id = " . $tmpid;
-		//logmessage("INIT of object " . $this->_tablename . " with query: " . $query);
+		//logmessage("INIT of object " . $tablename . " with query: " . $query);
 
 		$errormessage = "Error when retrieving a record from table " . $tmptablename . " with id " . $tmpid;
 		$result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
@@ -195,11 +195,11 @@ class OrionDB_DB_MySQL {
     
     $query = "UPDATE " . $tablename . " set ";
     if(count($key_value_sets)>0){
-    	//logmessage("Updating " . $this->_tablename . " id " . $currentid . " with " . count($key_value_sets) . " fields");
+    	//logmessage("Updating " . $tablename . " id " . $currentid . " with " . count($key_value_sets) . " fields");
       //logmessage("Assembling query for id " . $currentid);
 			$keyvaluequery = join(",", $key_value_sets);
 			$query .= $keyvaluequery . " where id=" . $currentid;
-      logmessage("UPDATE action in object " . $this->_tablename . " with query: " . $query);
+      logmessage("UPDATE action in object " . $tablename . " with query: " . $query);
 			$errormessage = "Error updating the existing record with id " . $currentid . " in the table " . $tablename;
 			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
     }
