@@ -3,7 +3,7 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 
 # The following line needs to point at the index.php of
-# OrionDB. If OrionDB resides at http://oriondb
+# OrionDB. If OrionDB resides at http://example.com/oriondb
 # the RewriteRule must be:
 # RewriteRule ^.*$ /oriondb/index.php
 
