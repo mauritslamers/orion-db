@@ -4,6 +4,14 @@
   OrionDB MySQL module
   
   Contains the actual DB request functions and error handling
+  
+  As PHP does not seem to be able to point to the function or object that called a specific 
+  function, it has turned out to be necessary to have a reference to the calling object 
+  in the function calls to create and update to check for field limitations.
+  These tests are not in place, but can be if needed.
+  Fieldtypes etc can be retrieved by calling $obj_ref->getFieldType or $obj_ref->getFieldLimit
+  
+  
 
 */
 
@@ -125,7 +133,7 @@ class OrionDB_DB_MySQL {
      
  		$tmpid = $this->cleansql($id);
  		$tmptablename = $this->cleansql($tablename);
-		$query = "select * from " . $tmptablename . " where id = " . $tmpid;
+		$query = "select * from " . $tmptablename . " where id = '" . $tmpid . "'";
 		//logmessage("INIT of object " . $tablename . " with query: " . $query);
 
 		$errormessage = "Error when retrieving a record from table " . $tmptablename . " with id " . $tmpid;
@@ -153,7 +161,7 @@ class OrionDB_DB_MySQL {
     else return false;
   }
   
-  function createrecord($tablename,stdClass $data){
+  function createrecord($tablename,stdClass $data, $obj_ref){ 
     // function to create a new record in the DB
     // returns the newly created record ID 
     if($tablename == "") return false;
@@ -162,16 +170,17 @@ class OrionDB_DB_MySQL {
     $properties = array();
 		$values = array();
 		foreach($data as $key=>$value){
+		  logmessage("Processing [ $key ] -> [ $value ]");
 		  $properties[] = $this->cleansql($key);
-      $resultvalue = $value ? $value: 'NULL'; // if $value evaluates false, have NULL for field value
-		  $values[] = $this->cleansql($resultvalue);
+      $resultvalue = $value ? "'" . $this->cleansql($value) . "'": 'NULL'; // if $value evaluates false, have NULL for field value
+		  $values[] = $resultvalue;
 		}
-	
+	  
 		if(count($properties)>0){
 			$propertiesquery = join(",",$properties);
 			$valuesquery = join(",",$values);
 			$query = "INSERT into " . $tablename;
-			$query .= $querystart . " (" . $propertiesquery . ") VALUES (" . $valuesquery . ")";
+			$query .= " (" . $propertiesquery . ") VALUES (" . $valuesquery . ")";
 			logmessage("CREATE action in object " . $tablename . " with query: " . $query);
 			$errormessage = "Error creating a new record in the table " . $tablename;
 			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
@@ -180,7 +189,7 @@ class OrionDB_DB_MySQL {
     return false;
   } // end function createrecord
   
-  function updaterecord($tablename, stdClass $data){
+  function updaterecord($tablename, stdClass $data, $obj_ref){
     // function to update an existing record
     if($tablename == ""){
       return false; 
@@ -189,8 +198,9 @@ class OrionDB_DB_MySQL {
   	$currentid = $data->id;
 		$key_value_sets = array();
     foreach($data as $key=>$value){
-       $valuetosave = $value ? $value : 'NULL';
-       $key_value_sets[] = $this->cleansql($key) . '=' . $this->cleansql($valuetosave);
+		  $properties[] = $this->cleansql($key);
+	    $valuetosave = $value ? "'" . $this->cleansql($value) . "'": 'NULL';
+      $key_value_sets[] = $this->cleansql($key) . '=' . $valuetosave;
     }
     
     $query = "UPDATE " . $tablename . " set ";
@@ -198,7 +208,7 @@ class OrionDB_DB_MySQL {
     	//logmessage("Updating " . $tablename . " id " . $currentid . " with " . count($key_value_sets) . " fields");
       //logmessage("Assembling query for id " . $currentid);
 			$keyvaluequery = join(",", $key_value_sets);
-			$query .= $keyvaluequery . " where id=" . $currentid;
+			$query .= $keyvaluequery . " where id='" . $currentid . "'";
       logmessage("UPDATE action in object " . $tablename . " with query: " . $query);
 			$errormessage = "Error updating the existing record with id " . $currentid . " in the table " . $tablename;
 			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);

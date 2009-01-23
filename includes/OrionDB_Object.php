@@ -149,7 +149,7 @@ class OrionDB_Object {
               // for some strange reason foreach runs every item twice, first with string association and 
               // second with the index number itself. Only the association is of any interest here.
           $codetoeval="\$this->$key = '$value';"; 
-          logmessage($codetoeval);
+          //logmessage($codetoeval);
           eval($codetoeval);
         }
       }
@@ -174,7 +174,7 @@ class OrionDB_Object {
     else $fieldnames_to_allow = $this->_fieldnames;
     
     foreach($data as $key=>$value){
-      if(array_key_exists($key, $fieldnames_to_allow)){
+      if(in_array($key, $fieldnames_to_allow)){
          $codetoeval = "\$resultdata->$key = '$value';";
          eval($codetoeval);
       }
@@ -186,10 +186,10 @@ class OrionDB_Object {
 		// Function to create a new record in the database.
 		// $data is a PHP object
     global $ORIONDB_DB;
-    
     // run through the data to filter out any fields not in $this->_fieldnames
-    $filtereddata = $this->filterfieldnames($data);
-		$newid = $ORIONDB_DB->createrecord($this->_tablename,$filtereddata);
+    $filtereddata = $this->filterfieldnames($data, true);
+		$newid = $ORIONDB_DB->createrecord($this->_tablename,$filtereddata, $this);
+		logmessage("New record created with id $newid");
 		if($newid) $this->init($newid);
 	}
 		
@@ -201,7 +201,7 @@ class OrionDB_Object {
 		// do nothing if an id property doesn't exist on $data
     if(property_exists($data,'id')){
       $filtereddata = $this->filterfieldnames($data,true);
-		  $ORIONDB_DB->updaterecord($this->_tablename, $data);
+		  $ORIONDB_DB->updaterecord($this->_tablename, $data, $this);
 		  $this->init($data->id);
     }
     else {

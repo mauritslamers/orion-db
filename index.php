@@ -176,7 +176,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                   // so let's remove the last three stray items...
                   $recordJSON = substr($recordJSON,0,strlen($recordJSON) - 3);
                 }
-                logmessage($recordJSON);
+                //logmessage($recordJSON);
                 //print_r(json_decode($recordJSON));
                 $JSONObject = json_decode($recordJSON);
             }
@@ -201,9 +201,13 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                $workingObject = eval("return new ". $requestedResource ."_class;");
                if($workingObject){
                   foreach($JSONObject as $key=>$value){
-                  //logmessage("Processing PUT object array item $key");
-                  $workingObject->update($value);
-                  $output[] = clone $workingObject;
+                    //logmessage("Processing PUT object array item $key");
+                    if(substr($value->id, 0, 2) == "@@") {
+                      logmessage("invalid id: $value->id. Putting before SC has time to proper process the just created record?");
+                       die();
+                    }
+                    $workingObject->update($value);
+                    $output[] = clone $workingObject;
                   }
                   echo json_encode($output);                  
                }
