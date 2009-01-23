@@ -16,6 +16,9 @@
   $ORIONDBCFG_DB_password = "db_passwd";
   $ORIONDBCFG_DB_dbname = "dbname";
    
+  // Set this to the base URI where OrionDB is located 
+  // so if your requests are pointed at http://example.com/orion-db/contacts
+  // replace /path/to with /orion-db
 	$ORIONDBCFG_baseURI = "/path/to"; // no trailing slash please :)
 
 // === Locale settings === //
@@ -78,7 +81,7 @@
 	$ORIONDBCFG_auth_server[1]["type"] = "ORIONDB"; // An authentication type which allows authentication against the database	
    $ORIONDBCFG_auth_server[1]["usertable"] = "users"; // the table where user information can be found
    $ORIONDBCFG_auth_server[1]["usernamefield"] = "username"; // the field where the user name can be found
-   $ORIONDBCFG_auth_server[1]["passwordfield"] = ["passwd"]; // the field in the tables where password info is stored
+   $ORIONDBCFG_auth_server[1]["passwordfield"] = "passwd"; // the field in the tables where password info is stored
    $ORIONDBCFG_auth_server[1]["passwords_stored_in_md5"] = false; // set whether the passwords in the database are stored in md5
    $ORIONDBCFG_auth_server[1]["active"] = false; // should this authentication server be visible?
 	
