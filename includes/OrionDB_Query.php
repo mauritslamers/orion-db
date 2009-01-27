@@ -104,7 +104,9 @@ function createSelectQuery(OrionDB_QueryInfo $info){
                // they are not empty
             switch($key){
                case 'order': // do nothing (yet)
-                  break; 
+                  break;
+			   case 'returncolumns': // also nothing (yet)
+			      break;
                case 'ids': // string with comma separated ids
                      // no check necessary as SC will give proper data
                   $query .= $this->addValueInListQuery('id',$value);
