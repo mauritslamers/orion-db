@@ -64,6 +64,20 @@ class OrionDB_DB_MySQL {
    return false;
   } // end function table_exists
   
+  private function get_tablename_in_proper_case($tablename){
+    if($tablename == "") return false;
+    
+    $tbname = strtolower($tablename);
+    $numtables = count($this->tablenames);
+    if($numitems>0){
+      foreach($this->tablenames as $value){
+        if(strtolower($value) == $tbname){
+          return $value; 
+        }
+      } 
+    }
+  }
+  
   
   private function filterfieldtype($typedef){
     // Function to return the fieldtype name and constraint
@@ -94,6 +108,7 @@ class OrionDB_DB_MySQL {
     if($tablename == "") return false;
     
     $tablename = $this->cleansql($tablename);
+		$tablename = $this->get_tablename_in_proper_case($tablename);
 		
 		$query = "SHOW COLUMNS from " . $tablename;
 		$result = mysql_query($query) or 
@@ -133,6 +148,7 @@ class OrionDB_DB_MySQL {
      
  		$tmpid = $this->cleansql($id);
  		$tmptablename = $this->cleansql($tablename);
+		$tmptablename = $this->get_tablename_in_proper_case($tablename);
 		$query = "select * from " . $tmptablename . " where id = '" . $tmpid . "'";
 		//logmessage("INIT of object " . $tablename . " with query: " . $query);
 
@@ -151,6 +167,7 @@ class OrionDB_DB_MySQL {
     // return an associative array with the content of the record
     if(($tablename == "") || ($query == "")) return false;
     
+		$tablename = $this->get_tablename_in_proper_case($this->cleansql($tablename));
     $errormessage="Error when retrieving a record by query from table " . $tablename;
     $result = mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
     $numrows = mysql_num_rows($result);
@@ -167,6 +184,7 @@ class OrionDB_DB_MySQL {
     if($tablename == "") return false;
     
     $tablename = $this->cleansql($tablename);
+		$tablename = $this->get_tablename_in_proper_case($tablename);    
     $properties = array();
 		$values = array();
 		foreach($data as $key=>$value){
@@ -191,10 +209,9 @@ class OrionDB_DB_MySQL {
   
   function updaterecord($tablename, stdClass $data, $obj_ref){
     // function to update an existing record
-    if($tablename == ""){
-      return false; 
-    }
+    if($tablename == "") return false; 
     
+		$tablename = $this->get_tablename_in_proper_case($this->cleansql($tablename));
   	$currentid = $data->id;
 		$key_value_sets = array();
     foreach($data as $key=>$value){
@@ -219,7 +236,7 @@ class OrionDB_DB_MySQL {
     if(($tablename == "") || (!$id)) return false;
     
     $tablename = $this->cleansql($tablename);
-    
+		$tablename = $this->get_tablename_in_proper_case($tablename);
     $query = "DELETE FROM " . $tablename . " WHERE id = " . $id;	
 		$errormessage = "Error deleting the record with id " . $currentid . " in the table " . $tablename;
 		logmessage("DELETE action in object " . $tablename . " with query: " . $query);
@@ -231,6 +248,7 @@ class OrionDB_DB_MySQL {
     // return an associative array with fieldnames and values
     if(($tablename == "") || ($query == "")) return false;
     
+		$tablename = $this->get_tablename_in_proper_case($this->cleansql($tablename));
     $errormessage = "Error while retrieving a collection from table " . $tablename;
     $result = mysql_query($query) or fataldberror($query, $errormessage . ": " . mysql_error());
     $numrows = mysql_num_rows($result);
