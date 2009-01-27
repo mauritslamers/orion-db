@@ -46,7 +46,11 @@ class OrionDB_Collection {
    					$currentrecord = $queryresult[$index];
    					$currentid = $currentrecord['id'];
    					$newobject = eval("return new " . $tablename . "_class;");
-   					$newobject->init($currentid);
+   					if(array_key_exists('returncolumns',$info->conditions)) {		// modify init of 'OrionDB_Object' to allow second, column limiting argument ('+' delineated string)
+						$newobject->init($currentid, $info->conditions['returncolumns']);
+					} else {
+						$newobject->init($currentid);
+					}
    					$this->records[] = $newobject; // add the new object to the record array
    					$this->ids[] = $currentid; // idem for the id
    				}	

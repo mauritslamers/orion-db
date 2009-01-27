@@ -115,12 +115,21 @@ class OrionDB_Object {
    }
 
   
-	function init($id){
+	function init($id, $returncolumns = "all"){																			// optional 2nd arg, a string of '+' separated column names, filters which columns get returned
 	  global $ORIONDB_DB;
-	  
+	  if (! ($returncolumns === "all") ) {
+		$returncolumns_array = explode(',',$returncolumns);
+	  }
 	  $record = $ORIONDB_DB->getrecordbyid($this->_tablename,$id);
 	  if($record){
    	  foreach($this->_fieldnames as $currentfieldname){
+		  		if (! ($returncolumns === "all") ) {
+					if (! in_array($currentfieldname, $returncolumns_array) ) {
+						array_splice($this->_fieldnames, array_search(currentfieldname,$this->_fieldnames),1);
+						unset($this->_fieldtypes[$currentfieldname], $this->_fieldlimits[$currentfieldname], $this->$currentfieldname);
+						continue; // only add info for the requested columns
+					}
+				}
    				$codetoeval = "\$this->$currentfieldname = htmlentities(\$record['$currentfieldname']);";
    				eval($codetoeval);
    		}
