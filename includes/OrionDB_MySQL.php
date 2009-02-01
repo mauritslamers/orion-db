@@ -66,10 +66,9 @@ class OrionDB_DB_MySQL {
   
   private function get_tablename_in_proper_case($tablename){
     if($tablename == "") return false;
-    
     $tbname = strtolower($tablename);
     $numtables = count($this->tablenames);
-    if($numitems>0){
+    if($numtables>0){
       foreach($this->tablenames as $value){
         if(strtolower($value) == $tbname){
           return $value; 
@@ -106,10 +105,11 @@ class OrionDB_DB_MySQL {
     // Return an array with fieldnames and types
     // clean first 
     if($tablename == "") return false;
-    
+    logmessage("getting columns from $tablename");    
     $tablename = $this->cleansql($tablename);
+    logmessage("tablename after cleaning: $tablename");
 		$tablename = $this->get_tablename_in_proper_case($tablename);
-		
+		logmessage("tablename after proper casing: $tablename");
 		$query = "SHOW COLUMNS from " . $tablename;
 		$result = mysql_query($query) or 
 		    fataldberror("Error setting up the class of table " . $tablename . ": " . mysql_error(), $query);
