@@ -69,9 +69,12 @@ private function addSingleKeyValueQuery($key,$value,$valueIsText = false){
           $this->_queryUnchanged[$this->_numberOfRecursions] = false;
        }
        else {
-          $returnQuery = " AND ";  
+					// use OR to search multiple columns, otherwise use AND
+					$returnQuery = ($_POST['search_string']) ? " OR " : " AND ";
        }
-       $returnQuery .= $ORIONDB_DB->cleansql($key) . "=";
+
+       $returnQuery .= $ORIONDB_DB->cleansql($key);
+			 $returnQuery .= ($_POST['search_string']) ? " LIKE " : "=";
        if($valueIsText){   
           $returnQuery .= "'" . $ORIONDB_DB->cleansql($value) . "' ";
        }
@@ -81,7 +84,6 @@ private function addSingleKeyValueQuery($key,$value,$valueIsText = false){
        return $returnQuery;
    }  
 }
-
 
 function createSelectQuery(OrionDB_QueryInfo $info){
    global $ORIONDB_DB;
