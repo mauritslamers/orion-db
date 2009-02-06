@@ -116,9 +116,10 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     OrionDB_List($tmpInfo);
                     break;
                 case 2:
-                    // we have a refresh
+                    // we have a refresh or a search
                     // when we have a refresh or get request for only one record, don't return
                     // a collection object, but only the record requested.
+					// when we have a search, return an array of matching record guids
                     if($ORIONDBCFG_auth_module_active){
                       // get the auth object and feed it the table name
                       // the function returns either true or false to allow continuation of the program
