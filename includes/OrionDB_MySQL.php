@@ -66,6 +66,7 @@ class OrionDB_DB_MySQL {
   
   private function get_tablename_in_proper_case($tablename){
     if($tablename == "") return false;
+
     $tbname = strtolower($tablename);
     $numtables = count($this->tablenames);
     if($numtables>0){
@@ -135,7 +136,12 @@ class OrionDB_DB_MySQL {
   	$in = rtrim($in);
   	
   	// escape out mysql code
-  	if (get_magic_quotes_gpc()) {		  $out = mysql_real_escape_string(stripslashes($in));	  } else {		  $out = mysql_real_escape_string($in);	  }	  return $out; 	
+  	if (get_magic_quotes_gpc()) {
+		  $out = mysql_real_escape_string(stripslashes($in));
+	  } else {
+		  $out = mysql_real_escape_string($in);
+	  }
+	  return $out; 	
   }
   
   function getrecordbyid($tablename,$id){
@@ -244,7 +250,6 @@ class OrionDB_DB_MySQL {
     // Function to run a query, currently only used by OrionDB_Collection
     // return an associative array with fieldnames and values
     if(($tablename == "") || ($query == "")) return false;
-    
 		$tablename = $this->get_tablename_in_proper_case($this->cleansql($tablename));
     $errormessage = "Error while retrieving a collection from table " . $tablename;
     $result = mysql_query($query) or fataldberror($query, $errormessage . ": " . mysql_error());

@@ -6,6 +6,7 @@
 require_once("includes/OrionDB_Object.php"); // standard database object
 require_once("includes/OrionDB_Collection.php"); // standard database collection object
 require_once('includes/OrionDB_Query.php'); // standard query object classes OrionDB_Query and OrionDB_QueryInfo
+require_once('includes/OrionDB_MySQL.php');
 
 
 
@@ -69,37 +70,65 @@ function OrionDB_Update(OrionDB_QueryInfo $info){
 }
 
 function OrionDB_Create($requestedResource){
-   /// Function to create a record of a specific type in the database
-   /// it should send back the record containing both the new ID and the old _guid
-   /// \return The created object
+   /// Function to create a record of a specific type in the database - to search for an old one.
+   /// If it's to create new records, it should send back the record containing both the new ID and the old _guid.
+   /// If it's to search, it should send back an array of matching SC GUIDs.
 
-	   // all records to create are in the $_POST
-      $incomingRecordsToCreate = json_decode($_POST['records']);
-      // if malformed JSON, it'd better die here :)
-      if($incomingRecordsToCreate){
-	      // $incomingRecordsToCreate is an array so iterate
-	      // but first get ourselves an empty OrionDB_Collection object to send data back
-	      $outgoingRecords = array();
-	      // create working object
-	      $workingObject = eval("return new " . $requestedResource . "_class;");
-	      foreach($incomingRecordsToCreate as $key=>$value){
-	         // we need to save the id so SC will know what record to update
-	         // it is sent along in both the id property as the _guid property
-	         // so remove both from the object we pass along, but keep 'em here  
-	         $SC_guid = $value->_guid;
-	         unset($value->_guid);
-	         unset($value->id);
-	         // next create a new record
-	         $workingObject->create($value);
-	         // now put back the SC temp guid
-	         $workingObject->_guid = $SC_guid;
-	         
-	         // put the record in the collection
-	         $outgoingRecords[] = clone $workingObject;
-	      }
-	      // ready? send back the new record(s)
-	      echo json_encode($outgoingRecords);
-	      //echo json_encode($workingObject);
+		// find out if you have a search or not...
+		if ($_POST['search_string']) {
+			// you have a search...
+			// build the query, then run it
+			$tmpInfo = new OrionDB_QueryInfo;
+			// iterate through $_POST
+			$tmpInfo->tablename = $requestedResource;
+			$tmpInfo->fieldnamelist = 'guid';
+			$searchColumnsAry = explode(',',$_POST['search_columns']);	
+			foreach($searchColumnsAry as $columnName){
+				// give the search string wildcard ears:
+				$tmpInfo->conditions[$columnName] = '%'.$_POST['search_string'].'%';
+			}
+			$tmpQueryObject = new OrionDB_Query;
+			$query = $tmpQueryObject->createSelectQuery($tmpInfo);
+			
+			global $ORIONDB_DB;
+			$outgoingArray = $ORIONDB_DB->runquery($requestedResource,$query);
+			
+			// ready? respond!
+			$testing = array();
+			foreach ($outgoingArray as $returnedRecord) {
+				$testing[] = $returnedRecord['guid'];
+			}
+			echo json_encode($testing);
+		} else {
+			// you don't have a search...
+			// all records to create are in the $_POST
+	      $incomingRecordsToCreate = json_decode($_POST['records']);
+	      // if malformed JSON, it'd better die here :)
+	      if($incomingRecordsToCreate){
+		      // $incomingRecordsToCreate is an array so iterate
+		      // but first get ourselves an empty OrionDB_Collection object to send data back
+		      $outgoingRecords = array();
+		      // create working object
+		      $workingObject = eval("return new " . $requestedResource . "_class;");
+		      foreach($incomingRecordsToCreate as $key=>$value){
+		         // we need to save the id so SC will know what record to update
+		         // it is sent along in both the id property as the _guid property
+		         // so remove both from the object we pass along, but keep 'em here  
+		         $SC_guid = $value->_guid;
+		         unset($value->_guid);
+		         unset($value->id);
+		         // next create a new record
+		         $workingObject->create($value);
+		         // now put back the SC temp guid
+		         $workingObject->_guid = $SC_guid;
+
+		         // put the record in the collection
+		         $outgoingRecords[] = clone $workingObject;
+		      }
+		      // ready? send back the new record(s)
+		      echo json_encode($outgoingRecords);
+		      //echo json_encode($workingObject);
+			}
       }
 }
 
