@@ -1,0 +1,60 @@
+About OrionDB
+
+OrionDB is a generic PHP REST front end to a database for the Sproutcore 
+RestServer. It has a plugin structure to support multiple database types.
+At the moment MySQL is fully supported and support for PostgreSQL is underway.
+
+OrionDB has the following requirements:
+
+- PHP 5 with version 5.2 or later
+- Apache with .htaccess overrides and mod_rewrite configured.
+
+and depending on what database you intend to use 
+- MySQL version 5 or later
+- PostgreSQL8 or later
+
+To use OrionDB, the names of your tables must match your 
+Sproutcore model names (case insensitive). This results in calls to the server 
+like:
+
+http://host/path/to/resource/tablename.
+
+Before you use it, please read the INSTALL file on how to configure 
+OrionDB.
+
+NOTE: The current version of OrionDB expects the browser to be able to do GET,
+POST, PUT and DELETE methods. 
+
+If you do not get it working, please check the wiki at 
+http://github.com/mauritslamers/orion-db/wikis/
+
+If you find a bug, please file a ticket on 
+http://mauritslamers.lighthouseapp.com/projects/19148-oriondb/overview 
+and please include a fix if you are able to write one!
+
+LICENSE:
+
+OrionDB is released under the very liberal MIT license, which is included below.
+
+
+The MIT License
+
+Copyright (c) <2008> <Maurits Lamers>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

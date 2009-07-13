@@ -1,0 +1,41 @@
+
+How to install OrionDB:
+
+Requirements:
+
+- PHP version 5.2 or later
+- if you want to use MySQL: version 5 or later
+- if you want to use PostgreSQL: version 8 or later.
+
+- copy the config.php.sample file to config.php and set all the values. Read 
+  the comments for more information or go to the wiki.
+- copy the htaccess.sample file to .htaccess and set the rewrite rule according 
+  to the example
+- if you want to use the log file, make sure it exists and set up the 
+  permissions to allow the user running the webserver to write to it 
+  (chmod 777 filename.log will always work :-) )
+- Happy DB-ing and SC-ing!
+
+How to update OrionDB:
+
+In the configuration file the changes are minimal. One option has been added and 
+4 options have been renamed. You can use the same configuration file, as long as you 
+perform the following changes manually:
+
+ Add: $ORIONDBCFG_DB_type = "mysql"; // For now choose between 'mysql' and 'postgresql' 
+ 
+ Change the name of the following options:
+   
+  $ORIONDBCFG_MySQL_host = "localhost";
+  $ORIONDBCFG_MySQL_user = "db_user";
+  $ORIONDBCFG_MySQL_password = "db_passwd";
+  $ORIONDBCFG_MySQL_dbname = "dbname";
+  
+  to: 
+  
+  $ORIONDBCFG_DB_host = "localhost";
+  $ORIONDBCFG_DB_user = "db_user";
+  $ORIONDBCFG_DB_password = "db_passwd";
+  $ORIONDBCFG_DB_dbname = "dbname";
+
+That's it!

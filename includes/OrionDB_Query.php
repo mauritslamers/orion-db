@@ -1,11 +1,11 @@
 <?php
   
-class OrionFW_DBQueryInfo{
+class OrionDB_QueryInfo{
   
   
          // the conditions array can contain special items like 'ids' and 'order'
          // but also fieldnames as key with a value or
-         // of course a new OrionFW_DBQueryInfo object containing a subquery 
+         // of course a new OrionDB_QueryInfo object containing a subquery 
          // The fieldname can also have a comma separated list 
   public $tablename = "";
   public $fieldnamelist = ""; // comma separated string of values
@@ -13,12 +13,12 @@ class OrionFW_DBQueryInfo{
 }  
   
   
-class OrionFW_DBQuery{
+class OrionDB_Query{
   // a class to create a query based on conditions and table names 
   
    /*
    
-   because the createQUery function can be called recursively, and keeping track of 
+   because the createQuery function can be called recursively, and keeping track of 
    changes in PHP cannot be handled by observers (Cocoa and SC are much more fun :) )
    we need a complicated array system to keep track of the changes to be able to
    put WHERE and AND in when necessary.
@@ -39,6 +39,8 @@ private function addValueInListQuery($key,$value){
    /// \param[in] $key The key (fieldname)
    /// \param[in] $value The value(s) of the fieldname
    /// \return a part of the query or nothing
+   global $ORIONDB_DB;
+   
    if(($key != "") && ($value != "")){
        if($this->_queryUnchanged[$this->_numberOfRecursions]){
           $returnQuery = " WHERE ";
@@ -47,7 +49,7 @@ private function addValueInListQuery($key,$value){
        else {
           $returnQuery = " AND ";  
        }
-       $returnQuery .= cleansql($key) . " in (" . cleansql($value) . ")";
+       $returnQuery .= $ORIONDB_DB->cleansql($key) . " in (" . $ORIONDB_DB->cleansql($value) . ")";
        return $returnQuery;
    }
 }
@@ -59,31 +61,41 @@ private function addSingleKeyValueQuery($key,$value,$valueIsText = false){
   /// \param[in] $value The value
   /// \param[in] $valueIsText Set whether the content of $value is text 
   /// \return A part of the query or nothing
+   global $ORIONDB_DB;
+   
    if(($key != "") && ($value != "")){
        if($this->_queryUnchanged[$this->_numberOfRecursions]){
           $returnQuery = " WHERE ";
           $this->_queryUnchanged[$this->_numberOfRecursions] = false;
        }
        else {
-          $returnQuery = " AND ";  
+					// use OR to search multiple columns, otherwise use AND
+					$returnQuery = ($_POST['search_string']) ? " OR " : " AND ";
        }
-       $returnQuery .= cleansql($key) . "=";
+
+       $returnQuery .= $ORIONDB_DB->cleansql($key);
+			 $returnQuery .= ($_POST['search_string']) ? " LIKE " : "=";
        if($valueIsText){   
-          $returnQuery .= "'" . cleansql($value) . "' ";
+          $returnQuery .= "'" . $ORIONDB_DB->cleansql($value) . "' ";
        }
        else {
-          $returnQuery .= cleansql($value) . " ";         
+          $returnQuery .= $ORIONDB_DB->cleansql($value) . " ";         
        }
        return $returnQuery;
    }  
 }
 
-
-function createSelectQuery(OrionFW_DBQueryInfo $info){
+function createSelectQuery(OrionDB_QueryInfo $info){
+   global $ORIONDB_DB;
+  
    $this->_numberOfRecursions++;
    //print_r($info);
+   if($info->fieldnamelist == ""){
+     $info->fieldnamelist = "*";  
+   }
    if(($info->tablename) && ($info->fieldnamelist)){
-      $query = "select ". cleansql($info->fieldnamelist) . " from " . cleansql($info->tablename); // setup the start
+      $query = "select ". $ORIONDB_DB->cleansql($info->fieldnamelist) . " from " . $ORIONDB_DB->cleansql($info->tablename); 
+        // setup the start
       $this->_queryUnchanged[$this->_numberOfRecursions] = true; // set the unchanged query flag true
       // next check for a conditions object
       if(property_exists($info,'conditions')){ // we need an object of the current table to check fieldnames
@@ -94,7 +106,9 @@ function createSelectQuery(OrionFW_DBQueryInfo $info){
                // they are not empty
             switch($key){
                case 'order': // do nothing (yet)
-                  break; 
+                  break;
+			   case 'returncolumns': // also nothing (yet)
+			      break;
                case 'ids': // string with comma separated ids
                      // no check necessary as SC will give proper data
                   $query .= $this->addValueInListQuery('id',$value);
@@ -102,9 +116,9 @@ function createSelectQuery(OrionFW_DBQueryInfo $info){
                default: // default means we probably have a fieldname, which we can ignore
                         // if the fieldname is not a property of the object
                   if(property_exists($tempTable,$key)){ 
-                      // check for the $value type, if it is a instance of OrionFW_DBQueryInfo, we need to
+                      // check for the $value type, if it is a instance of OrionDB_QueryInfo, we need to
                       // make up the field name and make a recursive call to create the subquery
-                      if($value instanceof OrionFW_DBQueryInfo){
+                      if($value instanceof OrionDB_QueryInfo){
                         // make recursive call
                         $tmpQuery = createSelectQuery($value);
                         if($tmpQuery != false){
@@ -144,7 +158,7 @@ function createSelectQuery(OrionFW_DBQueryInfo $info){
           if(array_key_exists('order',$info->conditions)){
             // add the order to the end of the query
             // check for field names?
-            $query .= " ORDER BY " . cleansql($info->conditions['order']);
+            $query .= " ORDER BY " . $ORIONDB_DB->cleansql($info->conditions['order']);
           }
       }
       // if ready, return the query

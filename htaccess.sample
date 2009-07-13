@@ -1,0 +1,16 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# The following line needs to point at the index.php of
+# OrionDB. If OrionDB resides at http://example.com/oriondb
+# the RewriteRule must be:
+# RewriteRule ^.*$ /oriondb/index.php
+
+#RewriteRule ^.*$ /http/path/to/oriondb/index.php
+
+# To prevent caching of the PHP results and 
+# to allow custom headers to reach php (bug in apache??)
+<IfModule mod_expires.c>
+	ExpiresActive off
+</IfModule>

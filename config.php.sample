@@ -1,0 +1,101 @@
+<?php
+
+/**
+ * \file config.php
+ * \brief Settings file for OrionDB. Also sets the locale.
+ *
+ * 
+ */
+ 
+
+ //=== Database settings === //
+ 
+  $ORIONDBCFG_DB_type = "mysql"; // For now choose between 'mysql' and 'postgresql' 
+  $ORIONDBCFG_DB_host = "localhost";
+  $ORIONDBCFG_DB_user = "db_user";
+  $ORIONDBCFG_DB_password = "db_passwd";
+  $ORIONDBCFG_DB_dbname = "dbname";
+   
+  // Set this to the base URI where OrionDB is located 
+  // so if your requests are pointed at http://example.com/orion-db/contacts
+  // replace /path/to with /orion-db
+	$ORIONDBCFG_baseURI = "/path/to"; // no trailing slash please :)
+
+// === Locale settings === //
+
+	$ORIONDBCFG_locale = "en_US";
+
+// === Log file settings === //	
+	$ORIONDBCFG_logfilename = "oriondb.log";
+	$ORIONDBCFG_logfilepath = "/path/to"; 
+
+// === Access settings === //	
+	$ORIONDBCFG_allow_non_sc_clients = false;
+
+
+// === Filter settings === //
+	// Next is a list of table names and fieldnames which should not turn up in the results
+	// Set the tablename and the fieldnames.
+	//$ORIONDBCFG_filter_field_names["tablename"] = array("fieldname1","fieldname2");  
+   //$ORIONDBCFG_filter_field_names["tablename"] = array("fieldname1","fieldname2");
+   //$ORIONDBCFG_filter_field_names["tablename"] = array("fieldname1","fieldname2");
+   //$ORIONDBCFG_filter_field_names["tablename"] = array("fieldname1","fieldname2");		
+
+
+// === Session settings === //	
+	$ORIONDBCFG_sessions_active = false; // Set sessions_active to true if you want session support
+	
+	$ORIONDBCFG_session_name = "OrionDB"; // When multiple instances of OrionDB are on one server, 
+	                                      // please set a different session name per instance to prevent
+                                         // the different instances to access each others resources
+                                         
+	$ORIONDBCFG_session_expire_time = 30; // session expire time in minutes
+	
+	$ORIONDBCFG_cookie_host_name = "localhost"; // hostname to set to the cookie. 
+	                                            // If empty, OrionDB will read it from $_SERVER["HTTP_HOST"]
+	                                            
+	$ORIONDBCFG_cookie_only_secure = false; // force OrionDB to only send the cookie over a secure connection
+	
+// === Authentication settings === //
+	
+	// Settings for the authserver plugin. the authserver plugin does not work if session support is turned off
+
+	$ORIONDBCFG_auth_module_active = false;  // activate the authserver plugin
+	$ORIONDBCFG_auth_module_only_valid_user_session = true; // force the user to be successfully authenticated
+	                                                        // before starting a session. 
+
+   // create a line like this for every auth server
+   $ORIONDBCFG_auth_server[0] = array();  
+  	$ORIONDBCFG_auth_server[1] = array();  
+  	//$ORIONDBCFG_auth_server[2] = array(); 
+
+   // the actual settings per server
+	$ORIONDBCFG_auth_server[0]["id"] = 0; // id for SC   
+	$ORIONDBCFG_auth_server[0]["name"] = "name"; // name to show on screen (send back to SC)
+   $ORIONDBCFG_auth_server[0]["type"] = "LDAP"; // authentication type
+	$ORIONDBCFG_auth_server[0]["host"] = "subdomain.domain.ext"; // hostname to authenticate against (non-ORIONDB auth only)
+	$ORIONDBCFG_auth_server[0]["active"] = false; // should this authentication server be visible?
+
+	$ORIONDBCFG_auth_server[1]["id"] = 1; // id for SC
+	$ORIONDBCFG_auth_server[1]["name"] = "name"; // name to show on the screen (send back to SC)
+	$ORIONDBCFG_auth_server[1]["type"] = "ORIONDB"; // An authentication type which allows authentication against the database	
+   $ORIONDBCFG_auth_server[1]["usertable"] = "users"; // the table where user information can be found
+   $ORIONDBCFG_auth_server[1]["usernamefield"] = "username"; // the field where the user name can be found
+   $ORIONDBCFG_auth_server[1]["passwordfield"] = "passwd"; // the field in the tables where password info is stored
+   $ORIONDBCFG_auth_server[1]["passwords_stored_in_md5"] = false; // set whether the passwords in the database are stored in md5
+   $ORIONDBCFG_auth_server[1]["active"] = false; // should this authentication server be visible?
+	
+   $ORIONDBCFG_auth_server_resource_name = "authserver"; // what resource name should trigger returning the auth options?
+                                                         // if the auth module is not active, this setting will be ignored
+                                                         // The model name in SC for a authserver list must be the same
+
+   $ORIONDBCFG_system_state_resource_name = "systemstate"; // what resource name should trigger the authentication process?
+                                                         // if the auth module is not active, this setting will be ignored
+                                                         // The model name in SC for a authserver list must be the same
+
+   $ORIONDBCFG_return_system_state_info = true; // Setting to provide SC with some system state info, very useful if a SC login
+                                                // client is used with access to different client
+
+
+
+?>
