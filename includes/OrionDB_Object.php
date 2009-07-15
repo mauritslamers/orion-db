@@ -9,14 +9,15 @@ class OrionDB_Object {
 	private $_tablename = ""; // needs to be private to prevent exposure to JSON
 	private $_initialised = false; // needs to be private to prevent exposure to JSON
 	public $type = "";
+	public $guid;
 	
 	// a few SC specific changes
-	//        refreshURL: "/contacts?refresh=123",
-   //     updateURL: "/contacts/123?update=Y",
-   //     destroyURL: "/contacts/123",
-	public $refreshURL = "";
-	public $updateURL = "";
-	public $destroyURL = "";
+	//        refreshUrl: "/contacts?refresh=123",
+   //     updateUrl: "/contacts/123?update=Y",
+   //     destroyUrl: "/contacts/123",
+	public $refreshUrl = "";
+	public $updateUrl = "";
+	public $destroyUrl = "";
 	
 	function __construct($tablename){
 		/** 
@@ -115,7 +116,7 @@ class OrionDB_Object {
    }
 
   
-	function init($id, $returncolumns = "all"){																			// optional 2nd arg, a string of '+' separated column names, filters which columns get returned
+	function init($id, $returncolumns = "all"){	// optional 2nd arg, a string of '+' separated column names, filters which columns get returned
 	  global $ORIONDB_DB;
 	  if (! ($returncolumns === "all") ) {
 		$returncolumns_array = explode(',',$returncolumns);
@@ -137,7 +138,8 @@ class OrionDB_Object {
    			// setup the refresh, update and destroy URL's for this record
    		global $ORIONDBCFG_baseURI;
    		$uri = $ORIONDBCFG_baseURI . "/" . $this->_tablename . "/" . $id;
-	    $this->refreshURL = $this->updateURL = $this->destroyURL = $uri;     
+	    $this->refreshUrl = $this->updateUrl = $this->destroyUrl = $uri; 
+	    $this->guid = $id;    
 			return true;
 		} else {
 			return false;
