@@ -62,6 +62,11 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
 	$tmpbaseURI = $ORIONDBCFG_baseURI . "/";
 	$ORION_actualRequest = substr($_SERVER['REQUEST_URI'],strlen($tmpbaseURI));
 	//logmessage("Getting request: " . $ORION_actualRequest);
+	 
+	// if the last character is a /, get rid of it
+	if(strrpos($ORION_actualRequest,'/') == (strlen($ORION_actualRequest) - 1)){
+	   $ORION_actualRequest = substr($ORION_actualRequest, 0, (strlen($ORION_actualRequest) -1));
+	}
 	
 	// now we have our actual request 
 	// next find out whether a specific item is being called for, say : student/25 which would be student with id 25
