@@ -210,9 +210,11 @@ class OrionDB_Object {
     global $ORIONDB_DB;
     
 		// do nothing if an id property doesn't exist on $data
-    if(property_exists($data,'id')){
-      $filtereddata = $this->filterfieldnames($data,true);
-		  $ORIONDB_DB->updaterecord($this->_tablename, $data, $this);
+		//logmessage("OrionDB Object: update called");
+    if( (property_exists($data,'id')) || (property_exists($data,'guid')) ){
+      if(!property_exists($data,'id')) $data->id = $data->guid; // fix if only guid exists
+      $filtereddata = $this->filterfieldnames($data,false);
+		  $ORIONDB_DB->updaterecord($this->_tablename, $filtereddata, $this);
 		  $this->init($data->id);
     }
     else {

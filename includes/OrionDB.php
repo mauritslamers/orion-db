@@ -102,8 +102,15 @@ function OrionDB_Create($requestedResource){
 		} else {
 			// you don't have a search...
 			// all records to create are in the $_POST
+			  $recordContents = urldecode($_POST["records"]);
+			  //logmessage("Posted records: " . $recordContents);
 	      $incomingRecordsToCreate = json_decode($_POST['records']);
+	      //logmessage("json decoding trial one: " . $incomingRecordsToCreate);
+	      if(!$incomingRecordsToCreate) {
+	        $incomingRecordsToCreate = json_decode( stripslashes($_POST['records']) );
+	      }
 	      // if malformed JSON, it'd better die here :)
+	      //print_r($incomingRecordsToCreate);
 	      if($incomingRecordsToCreate){
 		      // $incomingRecordsToCreate is an array so iterate
 		      // but first get ourselves an empty OrionDB_Collection object to send data back
@@ -128,7 +135,7 @@ function OrionDB_Create($requestedResource){
 		      // ready? send back the new record(s)
 		      echo json_encode($outgoingRecords);
 		      //echo json_encode($workingObject);
-			}
+			  }
       }
 }
 

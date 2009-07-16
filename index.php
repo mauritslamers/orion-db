@@ -148,12 +148,14 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     break;
                 default:
                     // not good, die
+                    
                     die();
                     break;
             } 
     		   break;
     	   case 'POST':
             //create
+             //logmessage("Creating new record for " . $requestedResource . " with post: " . $_POST);
              OrionDB_Create($requestedResource); // function will get the post data itself
     		   break;
     	   case 'PUT':
@@ -167,12 +169,14 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
             //logmessage("read input stream: $putdata");
             // check whether we have proper JSON data
             $JSONObject = json_decode($putdata);
+            if(!is_object($JSONObject)) $JSONObject = json_decode( urldecode($putdata) );
             if(!is_object($JSONObject)){
                 //logmessage("Now creating proper JSONData");
                 //now create proper JSON data
                 $putdata = urldecode($putdata);
                 $recordsText = substr($putdata,0,strlen('records='));
                 if($recordsText != 'records='){
+                    logmessage("Looks like someone is trying to trick this process into accepting data...?");
                     // someone is playing with us, so die
                     die();  
                 }
@@ -200,6 +204,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                   // as with the get, the process function will return true when allowed to continue
                   if(!$result){
                     // no continue allowed or the process function has handled it 
+                    logmessage("authentication enabled, but not allowed to PUT");
                     die();  
                   }
                }       
@@ -207,7 +212,7 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                $workingObject = eval("return new ". $requestedResource ."_class;");
                if($workingObject){
                   foreach($JSONObject as $key=>$value){
-                    //logmessage("Processing PUT object array item $key");
+                    logmessage("Processing PUT object array item $key");
                     if(substr($value->id, 0, 2) == "@@") {
                       logmessage("invalid id: $value->id. Putting before SC has time to proper process the just created record?");
                        die();

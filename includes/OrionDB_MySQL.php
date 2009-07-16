@@ -212,7 +212,10 @@ class OrionDB_DB_MySQL {
   
   function updaterecord($tablename, stdClass $data, $obj_ref){
     // function to update an existing record
-    if($tablename == "") return false; 
+    if($tablename == ""){
+      logmessage("ORIONDB_MySQL: trying to update a record without a proper tablename: ");
+      return false;  
+    }
     
 		$tablename = $this->get_tablename_in_proper_case($this->cleansql($tablename));
   	$currentid = $data->id;
@@ -232,6 +235,9 @@ class OrionDB_DB_MySQL {
       logmessage("UPDATE action in object " . $tablename . " with query: " . $query);
 			$errormessage = "Error updating the existing record with id " . $currentid . " in the table " . $tablename;
 			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(),$query);
+    }
+    else {
+      logmessage("Trying to update an empty object" . $data); 
     }
   }
   
