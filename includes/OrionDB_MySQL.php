@@ -188,7 +188,7 @@ class OrionDB_DB_MySQL {
      // if $value evaluates false, have NULL for field value
      $resultvalue = $fieldvalue ? "'" . $this->cleansql($fieldvalue) . "'": 'NULL'; 
      //temporary fix for integer value zero, TODO: create type check (private method?)
-     if($value == 0) $resultvalue = 0; 
+     if($fieldvalue == 0) $resultvalue = 0; 
      return $resultvalue;
   }
   
