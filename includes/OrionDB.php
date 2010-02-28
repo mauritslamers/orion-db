@@ -57,9 +57,12 @@ function OrionDB_List(OrionDB_QueryInfo $info){
    //print_r($list);
    if(property_exists($list,'records')){
       // catch if a OrionDB_Collection object returns empty, because it could not create OrionDB_Object class objects
-      echo json_encode($list);
+      //echo json_encode($list);
+	   return $list;
    }
-   
+   else {
+      return false;
+   }   
 }
 
 function OrionDB_Update(OrionDB_QueryInfo $info){

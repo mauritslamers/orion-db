@@ -118,7 +118,8 @@ if (isset($_SERVER['REQUEST_URI']) && isset($_SERVER['REQUEST_METHOD'])) {
                     foreach($_GET as $key=>$value){
                        $tmpInfo->conditions[$key] = $value;
                     }
-                    OrionDB_List($tmpInfo);
+                    $ret = OrionDB_List($tmpInfo);
+                    if($ret) echo json_encode($ret);
                     break;
                 case 2:
                     // we have a refresh or a search
