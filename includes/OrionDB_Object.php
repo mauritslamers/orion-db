@@ -170,7 +170,7 @@ class OrionDB_Object {
     
 	} // end init_by_query
 
-  private function filterfieldnames(stdClass $data, $filter_id = false){
+  private function filterfieldnames($data, $filter_id = false){
     $resultdata = new stdClass;
     
     if($filter_id){
