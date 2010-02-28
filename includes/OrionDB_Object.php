@@ -20,8 +20,8 @@ class OrionDB_Object {
 	public $destroyUrl = "";
 	
 	function __construct($tablename){
-		/** 
-			Function to set up the class itself
+		/* 
+		   Function to set up the class itself
 			It creates the $this->_fieldnames array with all the fieldnames belonging to the table the class is initiated with
 			It also creates the $this->[fieldname] properties and the $this->_tablename property
 		*/		
@@ -200,10 +200,18 @@ class OrionDB_Object {
     // run through the data to filter out any fields not in $this->_fieldnames
     $filtereddata = $this->filterfieldnames($data, true);
 		$newid = $ORIONDB_DB->createrecord($this->_tablename,$filtereddata, $this);
-		logmessage("New record created with id $newid");
+		logmessage("New record created in table " . $this->_tablename . " with id $newid");
 		if($newid) $this->init($newid);
 	}
-		
+			
+	function create_by_self(){
+	   global $ORIONDB_DB;
+	   $filtereddata = $this->filterfieldnames($this, true);
+		$newid = $ORIONDB_DB->createrecord($this->_tablename,$filtereddata, $this);
+		logmessage("New record created in table " . $this->_tablename . " with id $newid");
+	   if($newid) $this->init($newid);
+	}		
+			
 	function update(stdClass $data){
 		// function to update an existing record in the database
 		// the id property needs to be present in the $data object
