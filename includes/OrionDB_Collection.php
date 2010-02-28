@@ -40,7 +40,7 @@ class OrionDB_Collection {
    			//echo $query;
    			
    			$queryresult = $ORIONDB_DB->runquery($tablename, $query);
-   			$numrows = count($queryresult);
+   			$numrows = ($queryresult)? count($queryresult): 0; // count(false) returns 1 !!???
    			if($numrows>0){
    				for($index=0;$index<$numrows;$index++){
    					$currentrecord = $queryresult[$index];
