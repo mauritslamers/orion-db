@@ -181,19 +181,29 @@ class OrionDB_DB_MySQL {
     else return false;
   }
   
+  function check_field_validity($fieldname, $fieldvalue){
+     // function to check the validity of a fieldvalue
+     // TODO: needs to be completed properly
+     
+     // if $value evaluates false, have NULL for field value
+     $resultvalue = $fieldvalue ? "'" . $this->cleansql($fieldvalue) . "'": 'NULL'; 
+     //temporary fix for integer value zero, TODO: create type check (private method?)
+     if($value == 0) $resultvalue = 0; 
+     return $resultvalue;
+  }
+  
   function createrecord($tablename,stdClass $data, $obj_ref){ 
-    // function to create a new record in the DB
-    // returns the newly created record ID 
-    if($tablename == "") return false;
-    
-    $tablename = $this->cleansql($tablename);
-		$tablename = $this->get_tablename_in_proper_case($tablename);    
-    $properties = array();
+     // function to create a new record in the DB
+      // returns the newly created record ID 
+      if($tablename == "") return false;
+      $tablename = $this->cleansql($tablename);
+      $tablename = $this->get_tablename_in_proper_case($tablename);    
+      $properties = array();
 		$values = array();
 		foreach($data as $key=>$value){
 		  logmessage("Processing [ $key ] -> [ $value ]");
 		  $properties[] = $this->cleansql($key);
-      $resultvalue = $value ? "'" . $this->cleansql($value) . "'": 'NULL'; // if $value evaluates false, have NULL for field value
+        $resultvalue = $this->check_field_validity($key,$value);
 		  $values[] = $resultvalue;
 		}
 	  
@@ -206,9 +216,9 @@ class OrionDB_DB_MySQL {
 			$errormessage = "Error creating a new record in the table " . $tablename;
 			mysql_query($query) or fataldberror($errormessage . ": " . mysql_error(), $query);
 			return mysql_insert_id();
-    }
-    return false;
-  } // end function createrecord
+      }
+      return false;
+   } // end function createrecord
   
   function updaterecord($tablename, stdClass $data, $obj_ref){
     // function to update an existing record
@@ -222,7 +232,7 @@ class OrionDB_DB_MySQL {
 		$key_value_sets = array();
     foreach($data as $key=>$value){
 		  $properties[] = $this->cleansql($key);
-	    $valuetosave = $value ? "'" . $this->cleansql($value) . "'": 'NULL';
+	     $valuetosave = $this->check_field_validity($key,$value);
       $key_value_sets[] = $this->cleansql($key) . '=' . $valuetosave;
     }
     
