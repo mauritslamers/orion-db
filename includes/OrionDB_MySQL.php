@@ -184,11 +184,15 @@ class OrionDB_DB_MySQL {
   function check_field_validity($fieldname, $fieldvalue){
      // function to check the validity of a fieldvalue
      // TODO: needs to be completed properly
-     
      // if $value evaluates false, have NULL for field value
-     $resultvalue = $fieldvalue ? "'" . $this->cleansql($fieldvalue) . "'": 'NULL'; 
-     //temporary fix for integer value zero, TODO: create type check (private method?)
-     if($fieldvalue == 0) $resultvalue = 0; 
+     if($fieldvalue){
+     	  $resultvalue = "'" . $this->cleansql($fieldvalue) . "'";
+     }
+     else {
+     	  if($fieldvalue == 0){
+ 	        $resultvalue = 0;
+ 	     } else $resultvalue = 'NULL';
+     }
      return $resultvalue;
   }
   
