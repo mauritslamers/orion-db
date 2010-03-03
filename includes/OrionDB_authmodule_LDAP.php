@@ -11,7 +11,7 @@ class OrionDB_authmodule_LDAP {
    function auth(array $data_array){
       // function to check whether an LDAP authentication can be made
       //first check whether the $data_array contains the right elements
-      
+       
       /*
       $ORIONDBCFG_auth_server[0]["name"] = "name"; // name to show on screen (send back to SC)
       $ORIONDBCFG_auth_server[0]["type"] = "LDAP"; // authentication type

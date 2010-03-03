@@ -3,10 +3,20 @@
 class OrionDB_QueryInfo{
   
   
-         // the conditions array can contain special items like 'ids' and 'order'
-         // but also fieldnames as key with a value or
-         // of course a new OrionDB_QueryInfo object containing a subquery 
-         // The fieldname can also have a comma separated list 
+   // the conditions array can contain special items like 'ids' and 'order'
+   // but also fieldnames as key with a value or
+   // of course a new OrionDB_QueryInfo object containing a subquery 
+   // The fieldname can also have a comma separated list 
+
+   /*
+     Fieldnames array: A key-value pair array with fieldnames to return in the result
+   
+     Conditions array: a key-value pair array with fieldnames and values they should match
+     There are a few special conditions:
+     - order => orders by value
+     - 
+   */
+         
   public $tablename = "";
   public $fieldnamelist = ""; // comma separated string of values
   public $conditions = array();  
@@ -107,8 +117,8 @@ function createSelectQuery(OrionDB_QueryInfo $info){
             switch($key){
                case 'order': // do nothing (yet)
                   break;
-			   case 'returncolumns': // also nothing (yet)
-			      break;
+			      case 'returncolumns': // also nothing (yet)
+			         break;
                case 'ids': // string with comma separated ids
                      // no check necessary as SC will give proper data
                   $query .= $this->addValueInListQuery('id',$value);

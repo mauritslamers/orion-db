@@ -3,6 +3,11 @@
  	The Orion PHP Framework
  */
 
+require_once('includes/OrionDB_initialise.php'); // preconfig initialisation
+require_once("config.php"); // load the config 
+require_once("includes/OrionDB_postconfig.php"); // initialise database connection and localisation
+require_once("includes/securitylib.php");
+require_once("includes/commonfunctions.php"); // library containing common functions like error logging
 require_once("includes/OrionDB_Object.php"); // standard database object
 require_once("includes/OrionDB_Collection.php"); // standard database collection object
 require_once('includes/OrionDB_Query.php'); // standard query object classes OrionDB_Query and OrionDB_QueryInfo
@@ -44,9 +49,6 @@ function __autoload($classname){
 			}
    }
 } // end autoload
-
-	
-
 
 
 function OrionDB_List(OrionDB_QueryInfo $info){

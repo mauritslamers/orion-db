@@ -1,13 +1,8 @@
 <?php
 
 /*
-
 OrionDB_Authentication: an authentication module for OrionDB 
-
-
 */
-
-
 
 class OrionDB_Authentication {
    

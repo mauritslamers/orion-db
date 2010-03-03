@@ -64,6 +64,9 @@ class OrionDB_Object {
       }
     }
 	}	
+	
+	// To enable fieldparsing by applications other than the REST interface, let's add some function 
+	
 
    // As the field types and limits are private to prevent exposure to JSON,
    // we still want to be able to tell what the field types and limits are to other PHP functions.
