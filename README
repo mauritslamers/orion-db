@@ -1,7 +1,9 @@
 About OrionDB
 
-OrionDB is a generic PHP REST front end to a database for Sproutcore. 
-It has a plugin structure to support multiple database types.
+OrionDB is a generic PHP REST front end to a database for Sproutcore.
+A partly implemented data source is provided in the frameworks directory.
+
+OrionDB features a plugin structure to support multiple database types.
 At the moment MySQL is fully supported and support for PostgreSQL is underway.
 
 OrionDB has the following requirements:
