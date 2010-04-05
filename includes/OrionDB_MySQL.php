@@ -269,9 +269,15 @@ class OrionDB_DB_MySQL {
   function runquery($tablename,$query){
     // Function to run a query, currently only used by OrionDB_Collection
     // return an associative array with fieldnames and values
-    if(($tablename == "") || ($query == "")) return false;
-		$tablename = $this->get_tablename_in_proper_case($this->cleansql($tablename));
-    $errormessage = "Error while retrieving a collection from table " . $tablename;
+    if($query == "") return false;
+    if($tablename == ""){
+     $tablename = $this->get_tablename_in_proper_case($this->cleansql($tablename));
+       $errormessage = "Error while retrieving a collection from table " . $tablename;        
+    }
+    else {
+       $errormessage = "Error while executing an multi-table query.";
+    }
+
     $result = mysql_query($query) or fataldberror($query, $errormessage . ": " . mysql_error());
     $numrows = mysql_num_rows($result);
     if($numrows > 0){
@@ -282,7 +288,7 @@ class OrionDB_DB_MySQL {
       return $returnarray;
     } 
     else return false;
-}
+  }
 
 } // end class OrionDB_DB_MySQL
 
