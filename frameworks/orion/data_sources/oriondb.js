@@ -13,8 +13,6 @@
 Orion.OrionDB = SC.DataSource.extend(
 /** @scope Orion.Oriondb.prototype */ {
 
-  OrionDBHost: 'localhost:4020', 
-
   OrionDBBaseUrl: '/~maurits/OrionDB',
 
   OrionDBGetRequest: function(url,notifyobj,notifyfunc,store,query,storeKey){
@@ -37,7 +35,7 @@ Orion.OrionDB = SC.DataSource.extend(
     var rectype = query.get('recordType');
     if(rectype && query.isRemote()){
       console.log('Remote fetch called on OrionDB');
-      var url = "http://" + this.OrionDBHost + this.OrionDBBaseUrl + "/" + rectype.prototype.OrionDBUrl;
+      var url = this.OrionDBBaseUrl + "/" + rectype.prototype.OrionDBUrl;
       //console.log("Found url: " + url);  
       this.OrionDBGetRequest(url,this,this._handleFetch,store,query);
       return YES;
