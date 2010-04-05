@@ -54,6 +54,9 @@ function generateemailaddress($firstname,$inbetween,$lastname){
 
 function decode_json($post){
 	$post = utf8_encode($post);
+	if (get_magic_quotes_gpc()){
+      $post = stripslashes($post);
+   }
 	return json_decode($post);	
 }
 
